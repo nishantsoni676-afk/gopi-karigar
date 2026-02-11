@@ -199,31 +199,38 @@
         const address = document.getElementById('newAddress').value;
         if (!name) return alert("Enter Name");
         const id = "K_" + Date.now();
-        masterData[id] = { name, phone: phone || 'N/A', address: address || 'N/A', dr: [], cr: [] };
+        masterData[id] = { name, phone: phone || 'N/A', address: address || 'N/A', dr: [], cr: [], cash: [] };
         currentId = id; saveData(); hideModal(); refreshUI();
     }
 
     function addEntry(type) {
-        if(!currentId) return;
-        const wt = parseFloat(document.getElementById(type.toLowerCase() + 'Wt').value);
+        if(!currentId || !masterData[currentId]) return;
+        const wtInput = document.getElementById(type.toLowerCase() + 'Wt');
+        const samanInput = document.getElementById(type.toLowerCase() + 'Saman');
+        const dateInput = document.getElementById(type.toLowerCase() + 'Date');
+        
+        const wt = parseFloat(wtInput.value);
         if (isNaN(wt)) return;
+        
         const now = new Date();
         const autoDate = now.toLocaleDateString('en-GB') + ", " + now.getHours() + ":" + (now.getMinutes()<10?'0':'') + now.getMinutes();
         
         let entry = { 
-            date: document.getElementById(type.toLowerCase() + 'Date').value || autoDate, 
-            saman: document.getElementById(type.toLowerCase() + 'Saman').value || "Gold", 
+            date: dateInput.value || autoDate, 
+            saman: samanInput.value || "Gold", 
             wt: wt 
         };
+
         if (type === 'Cr') {
             let d = parseFloat((wt - Math.floor(wt)).toFixed(2));
             entry.rounded = (wt < 1) ? 0 : (d < 0.35) ? Math.floor(wt) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(wt) + 1);
         }
+
+        if(!masterData[currentId][type.toLowerCase()]) masterData[currentId][type.toLowerCase()] = [];
         masterData[currentId][type.toLowerCase()].push(entry);
+        
         saveData(); renderTable();
-        document.getElementById(type.toLowerCase() + 'Wt').value = '';
-        document.getElementById(type.toLowerCase() + 'Saman').value = '';
-        document.getElementById(type.toLowerCase() + 'Date').value = '';
+        wtInput.value = ''; samanInput.value = ''; dateInput.value = '';
     }
 
     function editEntry(type, idx) {
@@ -246,9 +253,9 @@
     function calculate() {
         let k = masterData[currentId]; if(!k) return;
         let rate = parseFloat(document.getElementById('rate').value) || 0;
-        const totalDr = k.dr.reduce((s, i) => s + i.wt, 0);
-        const totalCr = k.cr.reduce((s, i) => s + i.wt, 0);
-        const totalNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
+        const totalDr = (k.dr || []).reduce((s, i) => s + i.wt, 0);
+        const totalCr = (k.cr || []).reduce((s, i) => s + i.wt, 0);
+        const totalNet = (k.cr || []).reduce((s, i) => s + (i.rounded || 0), 0);
         const netBal = totalDr - totalCr;
         const fine = ((totalNet * 0.05) - netBal) * 0.91;
         document.getElementById('dispDr').innerText = totalDr.toFixed(3);
@@ -262,6 +269,7 @@
     function renderTable() {
         const body = document.getElementById('ledgerBody'); body.innerHTML = '';
         let k = masterData[currentId]; if(!k) return;
+        k.dr = k.dr || []; k.cr = k.cr || [];
         const rows = Math.max(k.dr.length, k.cr.length);
         for (let i = 0; i < rows; i++) {
             const dr = k.dr[i]; const cr = k.cr[i];
@@ -270,27 +278,36 @@
                 <td style="background:#fffafa;">${dr ? dr.wt.toFixed(3) : '-'} ${dr ? `<br><button class="btn-edit-row" onclick="editEntry('Dr', ${i})">✎</button><button class="btn-del-row" onclick="deleteRow('Dr', ${i})">x</button>` : ''}</td>
                 <td>${cr ? cr.date : '-'}</td><td>${cr ? cr.saman : '-'}</td>
                 <td style="background:#fafffa;">${cr ? cr.wt.toFixed(3) : '-'} ${cr ? `<br><button class="btn-edit-row" onclick="editEntry('Cr', ${i})">✎</button><button class="btn-del-row" onclick="deleteRow('Cr', ${i})">x</button>` : ''}</td>
-                <td class="editable-net" onclick="editNet(${i})">${cr ? cr.rounded.toFixed(1) : '-'}</td>
+                <td class="${cr ? 'editable-net' : ''}" onclick="${cr ? `editNet(${i})` : ''}">${cr ? cr.rounded.toFixed(1) : '-'}</td>
             </tr>`;
         }
         calculate();
     }
 
     function addCashEntry() {
-        if(!currentId) return;
-        const amt = parseFloat(document.getElementById('cashAmt').value);
+        if(!currentId || !masterData[currentId]) return;
+        const amtInput = document.getElementById('cashAmt');
+        const partInput = document.getElementById('cashPart');
+        const dateInput = document.getElementById('cashDate');
+        const typeInput = document.getElementById('cashType');
+
+        const amt = parseFloat(amtInput.value);
         if(isNaN(amt)) return;
+        
         if(!masterData[currentId].cash) masterData[currentId].cash = [];
+        
         const now = new Date();
         const autoDate = now.toLocaleDateString('en-GB') + ", " + now.getHours() + ":" + (now.getMinutes()<10?'0':'') + now.getMinutes();
+        
         masterData[currentId].cash.push({
-            date: document.getElementById('cashDate').value || autoDate,
-            part: document.getElementById('cashPart').value || "Cash",
-            type: document.getElementById('cashType').value,
+            date: dateInput.value || autoDate,
+            part: partInput.value || "Cash",
+            type: typeInput.value,
             amt: amt
         });
+        
         saveData(); renderCashTable();
-        document.getElementById('cashAmt').value = ''; document.getElementById('cashPart').value = ''; document.getElementById('cashDate').value = '';
+        amtInput.value = ''; partInput.value = ''; dateInput.value = '';
     }
 
     function editCash(idx) {
@@ -305,7 +322,8 @@
 
     function renderCashTable() {
         const body = document.getElementById('cashTableBody'); body.innerHTML = '';
-        let k = masterData[currentId]; if(!k || !k.cash) return;
+        let k = masterData[currentId]; if(!k) return;
+        k.cash = k.cash || [];
         let bal = 0;
         k.cash.forEach((c, idx) => {
             let paid = c.type === 'Paid' ? c.amt : 0;
@@ -340,7 +358,7 @@
         const k = masterData[currentId]; if(!k) return;
         const logo = localStorage.getItem('shopLogo') || '';
         let pdfHTML = `<div style="padding:20px; text-align:center; font-family:sans-serif;">${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}<h2 style="margin:5px 0;">GOPI JEWELLERS</h2><p>Karigar: <b>${k.name}</b> | Phone: ${k.phone} <br> Address: ${k.address}</p><table style="width:100%; border-collapse:collapse; font-size:10px; margin-top:10px;"><thead style="background:#eee;"><tr><th>Dr Date</th><th>Saman</th><th>Wt</th><th>Cr Date</th><th>Saman</th><th>Wt</th><th>Net</th></tr></thead><tbody>`;
-        const rows = Math.max(k.dr.length, k.cr.length);
+        const rows = Math.max((k.dr||[]).length, (k.cr||[]).length);
         for (let i = 0; i < rows; i++) {
             pdfHTML += `<tr><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.saman || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.saman || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1) || '-'}</td></tr>`;
         }
@@ -353,7 +371,7 @@
         const logo = localStorage.getItem('shopLogo') || '';
         let bal = 0;
         let pdfHTML = `<div style="padding:20px; text-align:center; font-family:sans-serif;">${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}<h2 style="margin:5px 0;">GOPI JEWELLERS</h2><p>Karigar: <b>${k.name}</b> | Phone: ${k.phone} <br> Address: ${k.address}</p><table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;"><thead style="background:#eee;"><tr><th>Date</th><th>Particular</th><th>Paid (Dr)</th><th>Recd (Cr)</th><th>Balance</th></tr></thead><tbody>`;
-        k.cash.forEach(c => {
+        (k.cash||[]).forEach(c => {
             let paid = c.type === 'Paid' ? c.amt : 0; let recd = c.type === 'Recd' ? c.amt : 0; bal += (paid - recd);
             pdfHTML += `<tr><td style="border:1px solid #ddd; padding:8px;">${c.date}</td><td style="border:1px solid #ddd; padding:8px;">${c.part}</td><td style="border:1px solid #ddd; padding:8px; color:red;">${paid || '-'}</td><td style="border:1px solid #ddd; padding:8px; color:green;">${recd || '-'}</td><td style="border:1px solid #ddd; padding:8px; font-weight:bold;">₹${bal}</td></tr>`;
         });
