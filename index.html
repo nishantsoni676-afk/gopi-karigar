@@ -61,6 +61,8 @@
     <div id="daily-cash-page" class="page">
         <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
         <div class="header"><h2>Daily Shop Cash Book</h2></div>
+        <button class="btn-nav" style="background:#2c3e50; color:white; margin-bottom:10px;" onclick="generateDailyPDF()">📄 DOWNLOAD DAILY REPORT</button>
+        
         <div class="input-card" style="border-top: 5px solid var(--gold);">
             <div style="display:flex; gap:5px;"><input type="text" id="dailyDate" style="width:35%;"><input type="text" id="dailyPart" placeholder="Details"></div>
             <div style="display:flex; gap:5px; margin-top:5px;"><input type="number" id="dailyAmt" placeholder="Amount ₹"><select id="dailyType" style="width:40%;"><option value="In">CASH IN (+)</option><option value="Out">CASH OUT (-)</option></select></div>
@@ -172,6 +174,24 @@
         fetch(CLOUD_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(masterData) });
     }
 
+    function generateDailyPDF() {
+        const logo = localStorage.getItem('shopLogo') || '';
+        let bal = 0;
+        let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">
+            ${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}
+            <h2 style="margin:5px 0; color:#d4af37;">GOPI JEWELLERS</h2>
+            <h3 style="color:#1a1a1a; margin-bottom:20px; border-bottom:2px solid #eee; padding-bottom:10px;">Daily Shop Cash Book Report</h3>
+            <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                <thead style="background:#f4f4f4;"><tr><th style="border:1px solid #ddd; padding:8px;">Date</th><th style="border:1px solid #ddd; padding:8px;">Description</th><th style="border:1px solid #ddd; padding:8px;">Cash In (+)</th><th style="border:1px solid #ddd; padding:8px;">Cash Out (-)</th><th style="border:1px solid #ddd; padding:8px;">Balance</th></tr></thead>
+                <tbody>`;
+        masterData.dailyEntries.forEach(e => {
+            let i = e.type === 'In' ? e.amt : 0; let o = e.type === 'Out' ? e.amt : 0; bal += (i - o);
+            pdfHTML += `<tr><td style="border:1px solid #ddd; padding:8px;">${e.date}</td><td style="border:1px solid #ddd; padding:8px;">${e.part}</td><td style="border:1px solid #ddd; padding:8px; color:green;">${i||'-'}</td><td style="border:1px solid #ddd; padding:8px; color:red;">${o||'-'}</td><td style="border:1px solid #ddd; padding:8px; font-weight:bold;">₹${bal}</td></tr>`;
+        });
+        pdfHTML += `</tbody></table><div style="margin-top:20px; text-align:right; font-size:16px; border-top:2px solid #d4af37; padding-top:10px;"><b>Final Shop Balance: ₹${bal}</b></div></div>`;
+        html2pdf().from(pdfHTML).set({ margin: 10, filename: `Shop_Daily_Cash_${getToday()}.pdf` }).save();
+    }
+
     function calculate() {
         let k = masterData[currentId]; if(!k) return;
         let r = parseFloat(document.getElementById('rate').value) || 0;
@@ -179,7 +199,6 @@
         const tCr = k.cr.reduce((s, i) => s + i.wt, 0);
         const tNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
         const netBal = tDr - tCr;
-        // THE 91% CUSTOM LOGIC
         const fine = ((tNet * 0.05) * 0.91) - netBal;
         document.getElementById('dispDr').innerText = tDr.toFixed(3);
         document.getElementById('dispCr').innerText = tCr.toFixed(3);
@@ -204,37 +223,16 @@
         calculate();
     }
 
-    // PDF LOGIC
     function generatePDF() {
         const k = masterData[currentId]; if(!k) return;
         const logo = localStorage.getItem('shopLogo') || '';
-        let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">
-            ${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}
-            <h2 style="margin:5px 0; color:#d4af37;">GOPI JEWELLERS</h2>
-            <div style="margin-bottom:20px; border-bottom:2px solid #eee; padding-bottom:10px;"><b>Karigar:</b> ${k.name} | <b>Phone:</b> ${k.phone} <br> <b>Address:</b> ${k.address}</div>
-            <table style="width:100%; border-collapse:collapse; font-size:11px;"><thead style="background:#f4f4f4;"><tr><th colspan="3" style="border:1px solid #ddd; padding:8px;">DR - ISSUE</th><th colspan="4" style="border:1px solid #ddd; padding:8px;">CR - JAMA</th></tr><tr><th style="border:1px solid #ddd; padding:5px;">Date</th><th style="border:1px solid #ddd; padding:5px;">Saman</th><th style="border:1px solid #ddd; padding:5px;">Wt</th><th style="border:1px solid #ddd; padding:5px;">Date</th><th style="border:1px solid #ddd; padding:5px;">Saman</th><th style="border:1px solid #ddd; padding:5px;">Wt</th><th style="border:1px solid #ddd; padding:5px;">Net</th></tr></thead><tbody>`;
+        let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}<h2 style="margin:5px 0; color:#d4af37;">GOPI JEWELLERS</h2><div style="margin-bottom:20px; border-bottom:2px solid #eee; padding-bottom:10px;"><b>Karigar:</b> ${k.name} | <b>Phone:</b> ${k.phone} <br> <b>Address:</b> ${k.address}</div><table style="width:100%; border-collapse:collapse; font-size:11px;"><thead style="background:#f4f4f4;"><tr><th colspan="3" style="border:1px solid #ddd; padding:8px;">DR - ISSUE</th><th colspan="4" style="border:1px solid #ddd; padding:8px;">CR - JAMA</th></tr><tr><th style="border:1px solid #ddd; padding:5px;">Date</th><th style="border:1px solid #ddd; padding:5px;">Saman</th><th style="border:1px solid #ddd; padding:5px;">Wt</th><th style="border:1px solid #ddd; padding:5px;">Date</th><th style="border:1px solid #ddd; padding:5px;">Saman</th><th style="border:1px solid #ddd; padding:5px;">Wt</th><th style="border:1px solid #ddd; padding:5px;">Net</th></tr></thead><tbody>`;
         const rows = Math.max(k.dr.length, k.cr.length);
-        for (let i = 0; i < rows; i++) {
-            pdfHTML += `<tr><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.saman||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3)||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.date||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.saman||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3)||'-'}</td><td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1)||'-'}</td></tr>`;
-        }
-        pdfHTML += `</tbody></table><div style="margin-top:20px; text-align:right; font-size:14px; border-top:2px solid #d4af37; padding-top:10px;"><b>Settlement Amount: ${document.getElementById('dispRs').innerText}</b></div></div>`;
+        for (let i = 0; i < rows; i++) { pdfHTML += `<tr><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.saman||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3)||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.date||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.saman||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3)||'-'}</td><td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1)||'-'}</td></tr>`; }
+        pdfHTML += `</tbody></table><div style="margin-top:20px; text-align:right; font-size:14px; border-top:2px solid #d4af37; padding-top:10px;"><b>Settlement: ${document.getElementById('dispRs').innerText}</b></div></div>`;
         html2pdf().from(pdfHTML).set({ margin: 10, filename: `${k.name}_Gold.pdf` }).save();
     }
 
-    function generateCashPDF() {
-        const k = masterData[currentId]; if(!k) return;
-        const logo = localStorage.getItem('shopLogo') || ''; let bal = 0;
-        let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">
-            ${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}
-            <h2 style="margin:5px 0; color:#1e3a8a;">GOPI JEWELLERS</h2>
-            <div style="margin-bottom:20px; border-bottom:2px solid #eee; padding-bottom:10px;"><b>Karigar:</b> ${k.name} | <b>Phone:</b> ${k.phone}</div>
-            <table style="width:100%; border-collapse:collapse; font-size:12px;"><thead style="background:#f4f4f4;"><tr><th>Date</th><th>Particular</th><th>Paid</th><th>Recd</th><th>Balance</th></tr></thead><tbody>`;
-        k.cash.forEach(c => { let p = c.type === 'Paid' ? c.amt : 0; let r = c.type === 'Recd' ? c.amt : 0; bal += (p - r); pdfHTML += `<tr><td style="border:1px solid #ddd; padding:8px;">${c.date}</td><td style="border:1px solid #ddd; padding:8px;">${c.part}</td><td style="color:red; border:1px solid #ddd;">${p||'-'}</td><td style="color:green; border:1px solid #ddd;">${r||'-'}</td><td style="font-weight:bold; border:1px solid #ddd;">₹${bal}</td></tr>`; });
-        pdfHTML += `</tbody></table><div style="margin-top:20px; text-align:right; font-size:16px;"><b>Final Balance: ₹${bal}</b></div></div>`;
-        html2pdf().from(pdfHTML).set({ margin: 10, filename: `${k.name}_Cash.pdf` }).save();
-    }
-
-    // CORE APP FUNCTIONS
     function addEntry(type) {
         const wtVal = document.getElementById(type + 'Wt').value; if (!wtVal) return;
         let entry = { date: document.getElementById(type + 'Date').value || getToday(), saman: document.getElementById(type + 'Saman').value || "Gold", wt: parseFloat(wtVal) };
@@ -246,26 +244,13 @@
         }
         masterData[currentId][type].push(entry); saveData(); renderTable(); document.getElementById(type + 'Wt').value = ''; document.getElementById(type + 'Saman').value = ''; setDates();
     }
-    function addCashEntry() {
-        const amtVal = document.getElementById('cashAmt').value; if(!amtVal) return;
-        if(!masterData[currentId].cash) masterData[currentId].cash = [];
-        masterData[currentId].cash.push({ date: document.getElementById('cashDate').value || getToday(), part: document.getElementById('cashPart').value || "Cash", type: document.getElementById('cashType').value, amt: parseFloat(amtVal) });
-        saveData(); renderCashTable(); document.getElementById('cashAmt').value = ''; document.getElementById('cashPart').value = ''; setDates();
-    }
-    function renderCashTable() {
-        const body = document.getElementById('cashTableBody'); body.innerHTML = '<thead><tr><th>Date</th><th>Part</th><th>Paid</th><th>Recd</th><th>Bal</th><th>X</th></tr></thead>';
-        let k = masterData[currentId]; if(!k || !k.cash) return;
-        let bal = 0; k.cash.forEach((c, idx) => {
-            let p = c.type === 'Paid' ? c.amt : 0; let r = c.type === 'Recd' ? c.amt : 0; bal += (p - r);
-            body.innerHTML += `<tr><td>${c.date}</td><td>${c.part}</td><td style="color:red;">${p||'-'}</td><td style="color:green;">${r||'-'}</td><td>₹${bal}</td><td><button class="btn-edit-row" onclick="openEdit('cash', ${idx})">✍</button><button class="btn-del-row" onclick="deleteCash(${idx})">x</button></td></tr>`;
-        });
-        document.getElementById('dispCashBal').innerText = "₹" + bal;
-    }
+
     function addDailyEntry() {
         const amt = parseFloat(document.getElementById('dailyAmt').value); if(isNaN(amt)) return;
         masterData.dailyEntries.push({ date: document.getElementById('dailyDate').value || getToday(), part: document.getElementById('dailyPart').value || "General", type: document.getElementById('dailyType').value, amt: amt });
         saveData(); renderDailyTable(); document.getElementById('dailyAmt').value = ''; document.getElementById('dailyPart').value = ''; setDates();
     }
+
     function renderDailyTable() {
         const body = document.getElementById('dailyTableBody'); body.innerHTML = ''; let bal = 0;
         masterData.dailyEntries.forEach((e, idx) => {
@@ -274,6 +259,7 @@
         });
         document.getElementById('dispDailyBal').innerText = "₹" + bal;
     }
+
     function openEdit(module, index) {
         editingRef = { module, index }; const entry = masterData[currentId][module][index];
         document.getElementById('editDate').value = entry.date;
@@ -285,6 +271,7 @@
         if(module === 'cash') document.getElementById('editCashType').value = entry.type;
         document.getElementById('editModal').style.display = 'flex';
     }
+
     function saveEdit() {
         const { module, index } = editingRef; const entry = masterData[currentId][module][index];
         entry.date = document.getElementById('editDate').value; const val = parseFloat(document.getElementById('editVal').value);
@@ -293,7 +280,17 @@
         saveData(); hideEditModal(); refreshUI();
     }
 
-    function checkPass() { if(document.getElementById('passInput').value === SHOP_PASS) { openModule('main-menu'); loadFromServer(); } else alert("Wrong Password!"); }
+    function renderCashTable() {
+        const body = document.getElementById('cashTableBody'); body.innerHTML = '<thead><tr><th>Date</th><th>Part</th><th>Paid</th><th>Recd</th><th>Bal</th><th>X</th></tr></thead>';
+        let k = masterData[currentId]; if(!k || !k.cash) return;
+        let bal = 0; k.cash.forEach((c, idx) => {
+            let p = c.type === 'Paid' ? c.amt : 0; let r = c.type === 'Recd' ? c.amt : 0; bal += (p - r);
+            body.innerHTML += `<tr><td>${c.date}</td><td>${c.part}</td><td style="color:red;">${p||'-'}</td><td style="color:green;">${r||'-'}</td><td>₹${bal}</td><td><button class="btn-edit-row" onclick="openEdit('cash', ${idx})">✍</button><button class="btn-del-row" onclick="deleteCash(${idx})">x</button></td></tr>`;
+        });
+        document.getElementById('dispCashBal').innerText = "₹" + bal;
+    }
+
+    function checkPass() { if(document.getElementById('passInput').value === SHOP_PASS) { openModule('main-menu'); loadFromServer(); } else alert("Wrong!"); }
     function openModule(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); setDates(); refreshUI(); }
     function refreshUI() {
         const selG = document.getElementById('karigarSelector'), selC = document.getElementById('cashKarigarSelector');
@@ -311,6 +308,14 @@
     function deleteCash(i) { if(confirm("Delete?")) { masterData[currentId].cash.splice(i, 1); saveData(); renderCashTable(); } }
     function deleteDaily(i) { if(confirm("Delete?")) { masterData.dailyEntries.splice(i, 1); saveData(); renderDailyTable(); } }
     function deleteKarigar() { if(confirm("Delete Profile?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); openModule('main-menu'); } }
+    function generateCashPDF() {
+        const k = masterData[currentId]; if(!k) return;
+        const logo = localStorage.getItem('shopLogo') || ''; let bal = 0;
+        let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}<h2 style="margin:5px 0; color:#1e3a8a;">GOPI JEWELLERS</h2><div style="margin-bottom:20px; border-bottom:2px solid #eee; padding-bottom:10px;"><b>Karigar:</b> ${k.name} | <b>Phone:</b> ${k.phone}</div><table style="width:100%; border-collapse:collapse; font-size:12px;"><thead style="background:#f4f4f4;"><tr><th>Date</th><th>Particular</th><th>Paid</th><th>Recd</th><th>Balance</th></tr></thead><tbody>`;
+        k.cash.forEach(c => { let p = c.type === 'Paid' ? c.amt : 0; let r = c.type === 'Recd' ? c.amt : 0; bal += (p - r); pdfHTML += `<tr><td style="border:1px solid #ddd; padding:8px;">${c.date}</td><td style="border:1px solid #ddd; padding:8px;">${c.part}</td><td style="color:red; border:1px solid #ddd;">${p||'-'}</td><td style="color:green; border:1px solid #ddd;">${r||'-'}</td><td style="font-weight:bold; border:1px solid #ddd;">₹${bal}</td></tr>`; });
+        pdfHTML += `</tbody></table><div style="margin-top:20px; text-align:right; font-size:16px;"><b>Final: ₹${bal}</b></div></div>`;
+        html2pdf().from(pdfHTML).set({ margin: 10, filename: `${k.name}_Cash.pdf` }).save();
+    }
 </script>
 </body>
 </html>
