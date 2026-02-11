@@ -7,106 +7,121 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { --gold: #d4af37; --dark: #1a1a1a; --debit-red: #e74c3c; --credit-green: #27ae60; --navy: #1e3a8a; }
-        html, body { height: 100%; margin: 0; padding: 0; background: #f0f2f5; font-family: -apple-system, sans-serif; overflow-x: hidden; }
+        html, body { height: 100%; margin: 0; padding: 0; background: #f0f2f5; font-family: -apple-system, sans-serif; }
         .container { background: white; width: 100%; min-height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; }
         
         /* MENU PAGE */
         .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 25px; flex-grow: 1; align-content: center; }
-        .menu-card { background: var(--dark); color: white; padding: 45px 20px; border-radius: 15px; text-align: center; border: 4px solid var(--gold); cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .menu-card { background: var(--dark); color: white; padding: 45px 20px; border-radius: 15px; text-align: center; border: 4px solid var(--gold); cursor: pointer; }
         .menu-card h2 { margin: 15px 0 0; font-size: 26px; text-transform: uppercase; font-weight: 900; }
 
-        /* COMMON PAGE STYLES */
-        .page { display: none; flex-direction: column; padding: 12px; box-sizing: border-box; min-height: 100vh; width: 100%; }
+        /* LEDGER PAGE STYLING (EXACTLY AS IT WAS) */
+        .page { display: none; flex-direction: column; padding: 10px; box-sizing: border-box; min-height: 100vh; }
         .page.active { display: flex; }
-        .header { text-align: center; border-bottom: 3px solid var(--gold); padding-bottom: 10px; margin-bottom: 15px; }
+        .header { text-align: center; border-bottom: 3px solid var(--gold); padding-bottom: 8px; margin-bottom: 12px; }
         
-        select, .btn-nav { width: 100%; padding: 16px; border-radius: 10px; border: none; font-weight: 900; margin-bottom: 10px; font-size: 18px; cursor: pointer; }
+        select, .btn-nav { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: 900; margin-bottom: 8px; font-size: 18px; cursor: pointer; }
         .btn-nav { background: var(--gold); color: var(--dark); text-transform: uppercase; }
         
-        .input-card { padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 2px solid #ddd; background: #f9f9f9; }
-        input { width: 100%; padding: 15px; border: 2px solid #ccc; border-radius: 8px; font-size: 18px; font-weight: bold; box-sizing: border-box; margin-top: 6px; }
+        .input-card { padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 2px solid #ddd; }
+        .dr-card { border-left: 10px solid var(--debit-red); background: #fffafa; }
+        .cr-card { border-left: 10px solid var(--credit-green); background: #fafffa; }
         
-        .table-wrap { flex-grow: 1; min-height: 400px; overflow: auto; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; background: white; }
-        table { width: 100%; border-collapse: collapse; min-width: 500px; font-size: 16px; font-weight: bold; }
-        th { position: sticky; top: 0; background: #eee; z-index: 10; border-bottom: 3px solid #ddd; padding: 14px; }
-        td { padding: 14px; text-align: center; border: 1px solid #ddd; }
+        input { width: 100%; padding: 15px; border: 2px solid #ccc; border-radius: 6px; font-size: 18px; font-weight: bold; box-sizing: border-box; margin-top: 5px; }
         
-        .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; }
+        .table-wrap { flex-grow: 1; min-height: 450px; overflow: auto; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; min-width: 650px; font-size: 16px; font-weight: bold; }
+        th { position: sticky; top: 0; background: #eee; z-index: 10; border-bottom: 3px solid #ddd; padding: 12px; font-size: 14px; }
+        td { padding: 12px; text-align: center; border: 1px solid #ddd; }
+        
+        .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 16px; font-weight: bold; }
 
-        .summary { margin-top: auto; padding-top: 10px; }
-        .stat-card { background: var(--navy); color: var(--gold); padding: 20px; border-radius: 10px; text-align: center; border: 3px solid var(--gold); }
-        .stat-card small { font-size: 14px; color: white; display: block; margin-bottom: 5px; font-weight: bold; text-transform: uppercase; }
-        .stat-card div { font-size: 34px; font-weight: 900; }
+        .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
+        .stat-card { background: var(--dark); color: white; padding: 15px; border-radius: 8px; text-align: center; }
+        .stat-card div { font-size: 22px; font-weight: 900; color: var(--gold); }
+        .full-width-card { grid-column: span 2; padding: 18px; border: 2px solid var(--gold); }
+        .fine-card { background: #2c3e50; }
+        .amount-card { background: var(--navy); border: 3px solid var(--gold); }
+        .amount-card div { font-size: 36px; }
 
         .btn-footer { width: 100%; padding: 20px; border: none; border-radius: 10px; font-weight: 900; color: white; margin-top: 10px; font-size: 20px; cursor: pointer; }
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="login-screen" class="page active" style="justify-content: center; align-items: center; text-align: center;">
-        <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:120px; margin-bottom: 25px;">
+        <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:120px; margin-bottom: 20px;">
         <h1>Gopi Jewellers</h1>
-        <input type="password" id="passInput" placeholder="Password" style="text-align:center; width: 85%;">
-        <button class="btn-footer" style="background:var(--gold); color:var(--dark); width: 85%;" onclick="checkPass()">LOGIN</button>
+        <input type="password" id="passInput" placeholder="Password" style="text-align:center; width: 80%;">
+        <button class="btn-footer" style="background:var(--gold); color:var(--dark); width: 80%;" onclick="checkPass()">LOGIN</button>
     </div>
 
     <div id="main-menu" class="page">
         <div class="header"><h2>Master Dashboard</h2></div>
         <div class="menu-grid">
             <div class="menu-card" onclick="openModule('jobwork-page')">
-                <span style="font-size: 60px;">⚖️</span>
+                <span style="font-size: 50px;">⚖️</span>
                 <h2>Karigar Jobwork</h2>
             </div>
             <div class="menu-card" onclick="openModule('cash-page')">
-                <span style="font-size: 60px;">💸</span>
+                <span style="font-size: 50px;">💸</span>
                 <h2>Karigar Cash</h2>
             </div>
         </div>
     </div>
 
     <div id="jobwork-page" class="page">
-        <button class="btn-footer" style="background:var(--navy); padding: 12px; font-size: 16px; margin-bottom: 10px;" onclick="openModule('main-menu')">← BACK TO DASHBOARD</button>
-        <div class="header"><h3>GOLD JOBWORK</h3></div>
+        <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO DASHBOARD</button>
+        <div class="header"><img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;"><div id="syncStatus" style="font-size:12px; color:#888; font-weight:900;">☁ CONNECTED</div></div>
+        
         <select id="karigarSelectorGold" onchange="switchKarigar('Gold')"></select>
-        <button class="btn-nav" onclick="showModal()">+ REGISTER NEW KARIGAR</button>
+        <button class="btn-nav" onclick="showModal()">+ NEW REGISTRATION</button>
+        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generatePDF()">📄 DOWNLOAD PDF SLIP</button>
 
-        <div class="input-card" style="border-left: 10px solid var(--debit-red); background: #fffafa;">
-            <div style="display:flex; gap:6px;"><input type="text" id="drDateGold" placeholder="Date"><input type="text" id="drSamanGold" placeholder="Saman"><input type="number" id="drWtGold" step="0.001" placeholder="Wt"></div>
+        <div class="input-card dr-card">
+            <div style="display:flex; gap:5px;"><input type="text" id="drDateGold" placeholder="Date"><input type="text" id="drSamanGold" placeholder="Saman"><input type="number" id="drWtGold" step="0.001" placeholder="Wt"></div>
             <button class="btn-footer" style="background:var(--debit-red);" onclick="addEntry('Gold', 'Dr')">ADD ISSUE (DR)</button>
         </div>
-        <div class="input-card" style="border-left: 10px solid var(--credit-green); background: #fafffa;">
-            <div style="display:flex; gap:6px;"><input type="text" id="crDateGold" placeholder="Date"><input type="text" id="crSamanGold" placeholder="Saman"><input type="number" id="crWtGold" step="0.001" placeholder="Wt"></div>
+        <div class="input-card cr-card">
+            <div style="display:flex; gap:5px;"><input type="text" id="crDateGold" placeholder="Date"><input type="text" id="crSamanGold" placeholder="Saman"><input type="number" id="crWtGold" step="0.001" placeholder="Wt"></div>
             <button class="btn-footer" style="background:var(--credit-green);" onclick="addEntry('Gold', 'Cr')">ADD JAMA (CR)</button>
         </div>
-        <input type="number" id="rate" oninput="calculateGold()" placeholder="₹ Gold Rate">
+
+        <div style="padding:15px; background:#eee; border-radius:10px; display: flex; align-items: center; justify-content: space-between;">
+            <label style="font-size:18px; font-weight:900;">GOLD RATE:</label>
+            <input type="number" id="rate" oninput="calculateGold()" placeholder="₹ Rate" style="width: 60%; margin-top: 0;">
+        </div>
 
         <div class="table-wrap">
             <table>
-                <thead><tr><th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th><th colspan="4" style="color:var(--credit-green)">CR - JAMA</th></tr>
-                <tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Total Cr</th><th>Net</th></tr></thead>
+                <thead>
+                    <tr><th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th><th colspan="4" style="color:var(--credit-green)">CR - JAMA</th></tr>
+                    <tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Total Cr</th><th>Net</th></tr>
+                </thead>
                 <tbody id="ledgerBodyGold"></tbody>
             </table>
         </div>
-        <div class="summary" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div class="stat-card" style="background:var(--dark); padding:10px;"><small>TOTAL DR</small><div id="dispDrGold">0.000</div></div>
-            <div class="stat-card" style="background:var(--dark); padding:10px;"><small>TOTAL CR</small><div id="dispCrGold">0.000</div></div>
-            <div class="stat-card" style="grid-column: span 2;"><small>SETTLEMENT (91%)</small><div id="dispRsGold">₹0</div></div>
+
+        <div class="summary">
+            <div class="stat-card"><small>TOTAL DR</small><div id="dispDrGold">0.000</div></div>
+            <div class="stat-card"><small>TOTAL CR</small><div id="dispCrGold">0.000</div></div>
+            <div class="stat-card"><small>TOTAL NET</small><div id="dispTotalNetGold">0.0</div></div>
+            <div class="stat-card"><small>BALANCE</small><div id="dispBalGold">0.000</div></div>
+            <div class="stat-card full-width-card fine-card"><small>KAM FINE (91.00)</small><div id="dispNetGold">0.00000</div></div>
+            <div class="stat-card full-width-card amount-card"><small>SETTLEMENT AMOUNT</small><div id="dispRsGold">₹0</div></div>
         </div>
+        <button class="btn-footer" style="background:#e74c3c; margin-bottom:30px;" onclick="deleteKarigar()">DELETE PROFILE</button>
     </div>
 
     <div id="cash-page" class="page">
-        <button class="btn-footer" style="background:var(--navy); padding: 12px; font-size: 16px; margin-bottom: 10px;" onclick="openModule('main-menu')">← BACK TO DASHBOARD</button>
+        <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO DASHBOARD</button>
         <div class="header"><h3>CASH LEDGER</h3></div>
-        
         <select id="karigarSelectorCash" onchange="switchKarigar('Cash')"></select>
 
-        <div class="input-card" style="border-left: 10px solid var(--navy);">
-            <div style="display:flex; gap:6px;">
-                <input type="text" id="cashDate" placeholder="Date">
-                <input type="text" id="cashPart" placeholder="Particular (Cash/GPay)">
-                <input type="number" id="cashAmt" placeholder="Amount">
-            </div>
+        <div class="input-card" style="border-left: 10px solid var(--navy); background: #f9f9f9;">
+            <div style="display:flex; gap:5px;"><input type="text" id="cashDate" placeholder="Date"><input type="text" id="cashPart" placeholder="Cash/GPay"><input type="number" id="cashAmt" placeholder="Amount"></div>
             <button class="btn-footer" style="background:var(--navy);" onclick="addCashEntry()">ADD CASH ENTRY</button>
         </div>
 
@@ -117,15 +132,15 @@
             </table>
         </div>
         <div class="summary">
-            <div class="stat-card"><small>CURRENT CASH BALANCE</small><div id="dispRsCash">₹0</div></div>
+            <div class="stat-card full-width-card amount-card"><small>CURRENT BALANCE</small><div id="dispRsCash">₹0</div></div>
         </div>
     </div>
 </div>
 
 <div id="modal">
-    <div style="background:white; padding:30px; border-radius:15px; width:95%; max-width:450px; text-align:center;">
+    <div style="background:white; padding:25px; border-radius:12px; width:95%; max-width:400px; text-align:center;">
         <h2>Register Karigar</h2>
-        <input type="text" id="newName" placeholder="Enter Name">
+        <input type="text" id="newName" placeholder="Karigar Name">
         <button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">SAVE</button>
         <button class="btn-footer" style="background:#999;" onclick="hideModal()">CANCEL</button>
     </div>
@@ -174,13 +189,70 @@
         if (!name) return;
         const id = "K_" + Date.now();
         masterData[id] = { name, gold: {dr:[], cr:[]}, cash: [] };
-        curGoldId = id; curCashId = id; saveData(); hideModal(); refreshUI('Gold'); refreshUI('Cash');
+        curGoldId = id; curCashId = id; 
+        saveData(); hideModal(); 
+        refreshUI('Gold'); refreshUI('Cash');
     }
 
-    // SHARED REFRESH UI: Syncs names across all selectors
+    function addEntry(mod, type) {
+        if(!curGoldId) return;
+        const val = parseFloat(document.getElementById((type === 'Dr' ? 'dr' : 'cr') + 'WtGold').value);
+        if (isNaN(val)) return;
+        let entry = { 
+            date: document.getElementById((type === 'Dr' ? 'dr' : 'cr') + 'DateGold').value, 
+            saman: document.getElementById((type === 'Dr' ? 'dr' : 'cr') + 'SamanGold').value, 
+            val: val 
+        };
+        if (type === 'Cr') entry.rounded = val < 1 ? 0 : ( (val % 1 < 0.35) ? Math.floor(val) : (val % 1 < 0.9 ? Math.floor(val) + 0.5 : Math.floor(val) + 1) );
+        masterData[curGoldId].gold[type.toLowerCase()].push(entry);
+        saveData(); renderTable('Gold');
+    }
+
+    function addCashEntry() {
+        if(!curCashId) return;
+        const amt = parseFloat(document.getElementById('cashAmt').value);
+        if (isNaN(amt)) return;
+        let k = masterData[curCashId];
+        let lastBal = k.cash.length > 0 ? k.cash[k.cash.length - 1].bal : 0;
+        k.cash.push({ date: document.getElementById('cashDate').value, part: document.getElementById('cashPart').value, amt: amt, bal: lastBal + amt });
+        saveData(); renderTable('Cash');
+        document.getElementById('cashAmt').value = ''; document.getElementById('cashPart').value = '';
+    }
+
+    function calculateGold() {
+        let k = masterData[curGoldId]; if(!k) return;
+        let rate = parseFloat(document.getElementById('rate').value) || 0;
+        const tDr = k.gold.dr.reduce((s, i) => s + i.val, 0);
+        const tCr = k.gold.cr.reduce((s, i) => s + i.val, 0);
+        const tNet = k.gold.cr.reduce((s, i) => s + (i.rounded || 0), 0);
+        const fine = ((tNet * 0.05) - (tDr - tCr)) * 0.91;
+        document.getElementById('dispDrGold').innerText = tDr.toFixed(3);
+        document.getElementById('dispCrGold').innerText = tCr.toFixed(3);
+        document.getElementById('dispTotalNetGold').innerText = tNet.toFixed(1);
+        document.getElementById('dispBalGold').innerText = (tDr - tCr).toFixed(3);
+        document.getElementById('dispNetGold').innerText = fine.toFixed(5);
+        document.getElementById('dispRsGold').innerText = "₹" + Math.abs(Math.round(fine * rate)).toLocaleString('en-IN');
+    }
+
+    function renderTable(mod) {
+        const id = (mod === 'Gold') ? curGoldId : curCashId;
+        const body = document.getElementById('ledgerBody' + mod); body.innerHTML = '';
+        let k = masterData[id]; if(!k) return;
+        if (mod === 'Gold') {
+            const rows = Math.max(k.gold.dr.length, k.gold.cr.length);
+            for (let i = 0; i < rows; i++) {
+                const dr = k.gold.dr[i]; const cr = k.gold.cr[i];
+                body.innerHTML += `<tr><td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td><td style="background:#fffafa;">${dr?dr.val.toFixed(3):'-'} ${dr ? `<button class="btn-del-row" onclick="deleteRow('Dr', ${i})">x</button>` : ''}</td><td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td><td style="background:#fafffa;">${cr?cr.val.toFixed(3):'-'} ${cr ? `<button class="btn-del-row" onclick="deleteRow('Cr', ${i})">x</button>` : ''}</td><td>${cr?cr.rounded.toFixed(1):'-'}</td></tr>`;
+            }
+            calculateGold();
+        } else {
+            k.cash.forEach((item, i) => { body.innerHTML += `<tr><td>${item.date}</td><td>${item.part}</td><td>₹${item.amt.toLocaleString()}</td><td style="color:var(--navy)">₹${item.bal.toLocaleString()}</td><td><button class="btn-del-row" onclick="deleteCashRow(${i})">x</button></td></tr>`; });
+            document.getElementById('dispRsCash').innerText = "₹" + (k.cash.length > 0 ? k.cash[k.cash.length - 1].bal.toLocaleString() : "0");
+        }
+    }
+
     function refreshUI(mod) {
-        const sel = document.getElementById('karigarSelector' + mod);
-        sel.innerHTML = '';
+        const sel = document.getElementById('karigarSelector' + mod); sel.innerHTML = '';
         Object.keys(masterData).forEach(id => {
             let opt = document.createElement('option'); opt.value = id; opt.innerHTML = masterData[id].name;
             if((mod==='Gold' && id===curGoldId) || (mod==='Cash' && id===curCashId)) opt.selected = true;
@@ -196,47 +268,20 @@
         renderTable(mod);
     }
 
-    // LOGIC REMAINS THE SAME
-    function addEntry(mod, type) {
-        const id = curGoldId; if(!id) return;
-        const val = parseFloat(document.getElementById((type === 'Dr' ? 'dr' : 'cr') + 'WtGold').value);
-        if (isNaN(val)) return;
-        let entry = { date: document.getElementById((type === 'Dr' ? 'dr' : 'cr') + 'DateGold').value, saman: document.getElementById((type === 'Dr' ? 'dr' : 'cr') + 'SamanGold').value, val: val };
-        if (type === 'Cr') entry.rounded = val < 1 ? 0 : ( (val % 1 < 0.35) ? Math.floor(val) : (val % 1 < 0.9 ? Math.floor(val) + 0.5 : Math.floor(val) + 1) );
-        masterData[id].gold[type.toLowerCase()].push(entry);
-        saveData(); renderTable('Gold');
-    }
+    function deleteCashRow(index) { if(confirm("Delete?")) { masterData[curCashId].cash.splice(index, 1); let rb = 0; masterData[curCashId].cash.forEach(item => { item.bal = rb + item.amt; rb = item.bal; }); saveData(); renderTable('Cash'); } }
+    function deleteRow(type, index) { if(confirm("Delete?")) { masterData[curGoldId].gold[type.toLowerCase()].splice(index, 1); saveData(); renderTable('Gold'); } }
+    function deleteKarigar() { if(confirm("Delete Profile?")) { delete masterData[curGoldId]; curGoldId = Object.keys(masterData)[0] || ""; saveData(); refreshUI('Gold'); refreshUI('Cash'); openModule('main-menu'); } }
 
-    function addCashEntry() {
-        const id = curCashId; if(!id) return;
-        const amt = parseFloat(document.getElementById('cashAmt').value);
-        if (isNaN(amt)) return;
-        let lastBal = masterData[id].cash.length > 0 ? masterData[id].cash[masterData[id].cash.length - 1].bal : 0;
-        masterData[id].cash.push({ date: document.getElementById('cashDate').value, part: document.getElementById('cashPart').value, amt: amt, bal: lastBal + amt });
-        saveData(); renderTable('Cash');
-        document.getElementById('cashAmt').value = ''; document.getElementById('cashPart').value = '';
-    }
-
-    function renderTable(mod) {
-        const id = (mod === 'Gold') ? curGoldId : curCashId;
-        const body = document.getElementById('ledgerBody' + mod); body.innerHTML = '';
-        let k = masterData[id]; if(!k) return;
-        if (mod === 'Gold') {
-            const rows = Math.max(k.gold.dr.length, k.gold.cr.length);
-            for (let i = 0; i < rows; i++) {
-                const dr = k.gold.dr[i]; const cr = k.cr = k.gold.cr[i];
-                body.innerHTML += `<tr><td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td><td>${dr?dr.val.toFixed(3):'-'} ${dr ? `<button class="btn-del-row" onclick="deleteRow('Gold','Dr', ${i})">x</button>` : ''}</td><td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td><td>${cr?cr.val.toFixed(3):'-'} ${cr ? `<button class="btn-del-row" onclick="deleteRow('Gold','Cr', ${i})">x</button>` : ''}</td><td>${cr?cr.rounded.toFixed(1):'-'}</td></tr>`;
-            }
-            calculateGold();
-        } else {
-            k.cash.forEach((item, i) => { body.innerHTML += `<tr><td>${item.date}</td><td>${item.part}</td><td>₹${item.amt.toLocaleString()}</td><td style="color:var(--navy)">₹${item.bal.toLocaleString()}</td><td><button class="btn-del-row" onclick="deleteCashRow(${i})">x</button></td></tr>`; });
-            document.getElementById('dispRsCash').innerText = "₹" + (k.cash.length > 0 ? k.cash[k.cash.length - 1].bal.toLocaleString() : "0");
+    function generatePDF() {
+        const k = masterData[curGoldId]; if(!k) return;
+        let pdfHTML = `<div style="padding:20px; text-align:center;"><h2>GOPI JEWELLERS</h2><h3>Karigar: ${k.name}</h3><table style="width:100%; border-collapse:collapse; margin-top:10px;"><thead><tr style="background:#eee;"><th>Date</th><th>Dr</th><th>Cr</th><th>Net</th></tr></thead><tbody>`;
+        const rows = Math.max(k.gold.dr.length, k.gold.cr.length);
+        for (let i = 0; i < rows; i++) {
+            pdfHTML += `<tr><td style="border:1px solid #ddd; padding:5px;">${k.gold.dr[i]?.date || k.gold.cr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.gold.dr[i]?.val.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.gold.cr[i]?.val.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.gold.cr[i]?.rounded.toFixed(1) || '-'}</td></tr>`;
         }
+        pdfHTML += `</tbody></table><h3>Total: ${document.getElementById('dispRsGold').innerText}</h3></div>`;
+        html2pdf().from(pdfHTML).set({ margin: 5, filename: `${k.name}_Gold_Slip.pdf`, html2canvas: { scale: 2 } }).save();
     }
-
-    function deleteCashRow(index) { if(confirm("Delete?")) { const k = masterData[curCashId]; k.cash.splice(index, 1); let rb = 0; k.cash.forEach(item => { item.bal = rb + item.amt; rb = item.bal; }); saveData(); renderTable('Cash'); } }
-    function calculateGold() { let k = masterData[curGoldId]; if(!k) return; let rate = parseFloat(document.getElementById('rate').value)||0; const tDr = k.gold.dr.reduce((s,i)=>s+i.val,0); const tCr = k.gold.cr.reduce((s,i)=>s+i.val,0); const tNet = k.gold.cr.reduce((s,i)=>s+(i.rounded||0),0); const fine = ((tNet*0.05)-(tDr-tCr))*0.91; document.getElementById('dispDrGold').innerText = tDr.toFixed(3); document.getElementById('dispCrGold').innerText = tCr.toFixed(3); document.getElementById('dispRsGold').innerText = "₹"+Math.abs(Math.round(fine*rate)).toLocaleString('en-IN'); }
-    function deleteRow(mod, type, index) { if(confirm("Delete?")) { masterData[curGoldId].gold[type.toLowerCase()].splice(index, 1); saveData(); renderTable('Gold'); } }
 </script>
 </body>
 </html>
