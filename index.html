@@ -39,7 +39,6 @@
 <div id="login-screen" class="container">
     <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:100px; margin-bottom: 20px;">
     <h2>Gopi Jewellers</h2>
-    <p>Enter Shop Password</p>
     <input type="password" id="passInput" placeholder="Enter Password" autofocus>
     <button class="btn-footer" style="background:var(--gold); color:var(--dark);" onclick="checkPass()">LOGIN</button>
 </div>
@@ -82,14 +81,8 @@
     <div class="table-wrap">
         <table>
             <thead>
-                <tr>
-                    <th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th>
-                    <th colspan="4" style="color:var(--credit-green)">CR - JAMA</th>
-                </tr>
-                <tr>
-                    <th>Date</th><th>Saman</th><th>Wt</th>
-                    <th>Date</th><th>Saman</th><th>Total Cr</th><th>Net</th>
-                </tr>
+                <tr><th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th><th colspan="4" style="color:var(--credit-green)">CR - JAMA</th></tr>
+                <tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Total Cr</th><th>Net</th></tr>
             </thead>
             <tbody id="ledgerBody"></tbody>
         </table>
@@ -126,15 +119,11 @@
     let currentId = "";
 
     function checkPass() {
-        const input = document.getElementById('passInput').value;
-        console.log("Checking password...");
-        if(input === SHOP_PASS) {
+        if(document.getElementById('passInput').value === SHOP_PASS) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
             loadFromServer();
-        } else { 
-            alert("Wrong Password! Please try 1234"); 
-        }
+        } else { alert("Wrong Password!"); }
     }
 
     async function loadFromServer() {
@@ -273,23 +262,40 @@
         const k = masterData[currentId];
         let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">
             <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;">
-            <h2>GOPI JEWELLERS</h2>
-            <p>Karigar: ${k.name} | Rate: ₹${k.rate}</p>
-            <table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;">
-                <tr style="background:#eee;"><th>Date</th><th>Dr Wt</th><th>Total Cr</th><th>Net</th></tr>`;
+            <h2 style="margin:5px 0;">GOPI JEWELLERS</h2>
+            <p style="margin:5px 0;"><b>Karigar:</b> ${k.name} | <b>Rate:</b> ₹${k.rate}</p>
+            <table style="width:100%; border-collapse:collapse; font-size:10px; margin-top:10px;">
+                <thead>
+                    <tr style="background:#eee;">
+                        <th style="border:1px solid #ddd; padding:5px;">Dr Date</th>
+                        <th style="border:1px solid #ddd; padding:5px;">Dr Saman</th>
+                        <th style="border:1px solid #ddd; padding:5px;">Dr Wt</th>
+                        <th style="border:1px solid #ddd; padding:5px;">Cr Date</th>
+                        <th style="border:1px solid #ddd; padding:5px;">Cr Saman</th>
+                        <th style="border:1px solid #ddd; padding:5px;">Total Cr</th>
+                        <th style="border:1px solid #ddd; padding:5px;">Net</th>
+                    </tr>
+                </thead>
+                <tbody>`;
         const rows = Math.max(k.dr.length, k.cr.length);
         for (let i = 0; i < rows; i++) {
             pdfHTML += `<tr>
-                <td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date || k.cr[i]?.date || '-'}</td>
+                <td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date || '-'}</td>
+                <td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.saman || '-'}</td>
                 <td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3) || '-'}</td>
+                <td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.date || '-'}</td>
+                <td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.saman || '-'}</td>
                 <td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3) || '-'}</td>
                 <td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1) || '-'}</td>
             </tr>`;
         }
-        pdfHTML += `</table><div style="background:#1e3a8a; color:#d4af37; padding:15px; margin-top:20px; border-radius:10px;">
-            <h3>Total Settlement: ${document.getElementById('dispRs').innerText}</h3>
-        </div></div>`;
-        html2pdf().from(pdfHTML).save(`${k.name}_Gopi_Jewellers.pdf`);
+        pdfHTML += `</tbody></table>
+            <div style="background:#1e3a8a; color:#d4af37; padding:15px; margin-top:20px; border-radius:10px; text-align:center;">
+                <p style="margin:0; color:white; font-size:12px;">Total Net: ${document.getElementById('dispTotalNet').innerText} | Fine: ${document.getElementById('dispNet').innerText}</p>
+                <h2 style="margin:10px 0;">Total Settlement: ${document.getElementById('dispRs').innerText}</h2>
+            </div>
+        </div>`;
+        html2pdf().from(pdfHTML).set({ margin: 5, filename: `${k.name}_Slip.pdf`, html2canvas: { scale: 2 } }).save();
     }
 </script>
 </body>
