@@ -15,7 +15,7 @@
         .menu-card { background: var(--dark); color: white; padding: 45px 20px; border-radius: 15px; text-align: center; border: 4px solid var(--gold); cursor: pointer; }
         .menu-card h2 { margin: 15px 0 0; font-size: 26px; text-transform: uppercase; font-weight: 900; }
 
-        /* LEDGER PAGE STYLING */
+        /* LEDGER PAGE STYLING (EXACTLY AS IT WAS) */
         .page { display: none; flex-direction: column; padding: 10px; box-sizing: border-box; min-height: 100vh; }
         .page.active { display: flex; }
         .header { text-align: center; border-bottom: 3px solid var(--gold); padding-bottom: 8px; margin-bottom: 12px; }
@@ -52,7 +52,7 @@
 
 <div class="container">
     <div id="login-screen" class="page active" style="justify-content: center; align-items: center; text-align: center;">
-        <img class="shop-logo" style="width:120px; margin-bottom: 20px;">
+        <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:120px; margin-bottom: 20px;">
         <h1>Gopi Jewellers</h1>
         <input type="password" id="passInput" placeholder="Password" style="text-align:center; width: 80%;">
         <button class="btn-footer" style="background:var(--gold); color:var(--dark); width: 80%;" onclick="checkPass()">LOGIN</button>
@@ -74,10 +74,7 @@
 
     <div id="jobwork-page" class="page">
         <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO DASHBOARD</button>
-        <div class="header">
-            <img class="shop-logo" style="width:60px;">
-            <div id="syncStatus" style="font-size:12px; color:#888; font-weight:900;">☁ CONNECTED</div>
-        </div>
+        <div class="header"><img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;"><div id="syncStatus" style="font-size:12px; color:#888; font-weight:900;">☁ CONNECTED</div></div>
         
         <select id="karigarSelectorGold" onchange="switchKarigar('Gold')"></select>
         <button class="btn-nav" onclick="showModal()">+ NEW REGISTRATION</button>
@@ -150,12 +147,6 @@
 </div>
 
 <script>
-    // --- CHANGEABLE ICON SETTINGS ---
-    const SHOP_LOGO = "https://i.postimg.cc/85zKzX68/1000207262.png"; 
-    
-    // Apply logo to all logo elements automatically
-    document.querySelectorAll('.shop-logo').forEach(img => img.src = SHOP_LOGO);
-
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx0G79ae_2xJR8kBKE2CxjL_62qOUv0_BqzzmTN5YhopZ61XTg0F499a8QvQ3cTpGjcXw/exec";
     const SHOP_PASS = "1234";
     let masterData = {};
