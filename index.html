@@ -9,40 +9,30 @@
         :root { --gold: #d4af37; --dark: #1a1a1a; --debit-red: #e74c3c; --credit-green: #27ae60; --navy: #1e3a8a; }
         html, body { height: 100%; margin: 0; padding: 0; background: #f0f2f5; font-family: -apple-system, sans-serif; }
         .container { background: white; width: 100%; min-height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; }
-        
         .page { display: none; flex-direction: column; padding: 10px; box-sizing: border-box; min-height: 100vh; }
         .page.active { display: flex; }
         .header { text-align: center; border-bottom: 3px solid var(--gold); padding-bottom: 8px; margin-bottom: 12px; }
-        
-        /* Menu Styling */
         .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 25px; flex-grow: 1; align-content: center; }
         .menu-card { background: var(--dark); color: white; padding: 40px 20px; border-radius: 15px; text-align: center; border: 3px solid var(--gold); cursor: pointer; }
-        
-        /* Inputs & Buttons */
         input, select, .btn-nav { width: 100%; padding: 15px; border-radius: 8px; border: 2px solid #ccc; font-weight: bold; margin-bottom: 8px; font-size: 16px; box-sizing: border-box; }
         .btn-nav { background: var(--gold); color: var(--dark); text-transform: uppercase; border: none; cursor: pointer; }
         .btn-footer { width: 100%; padding: 20px; border: none; border-radius: 10px; font-weight: 900; color: white; margin-top: 10px; font-size: 20px; cursor: pointer; }
-        
         .input-card { padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 2px solid #ddd; }
         .dr-card { border-left: 10px solid var(--debit-red); background: #fffafa; }
         .cr-card { border-left: 10px solid var(--credit-green); background: #fafffa; }
-        
         .table-wrap { flex-grow: 1; min-height: 350px; overflow: auto; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; min-width: 600px; font-size: 14px; font-weight: bold; }
         th { position: sticky; top: 0; background: #eee; z-index: 10; border-bottom: 2px solid #ddd; padding: 10px; }
         td { padding: 10px; text-align: center; border: 1px solid #ddd; }
-        
         .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; }
-
+        .btn-edit-row { background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin-right: 5px; }
         .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
         .stat-card { background: var(--dark); color: white; padding: 12px; border-radius: 8px; text-align: center; }
         .stat-card div { font-size: 20px; font-weight: 900; color: var(--gold); }
         .full-width-card { grid-column: span 2; padding: 15px; border: 2px solid var(--gold); }
         .amount-card { background: var(--navy); border: 3px solid var(--gold); }
-
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
-        .logo-container { cursor: pointer; position: relative; display: inline-block; }
-        .logo-container:hover::after { content: "Tap to Change"; position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: white; font-size: 10px; padding: 2px; }
+        .editable-net { background: #eef2ff; cursor: pointer; border-bottom: 2px dashed var(--navy); }
     </style>
 </head>
 <body>
@@ -61,35 +51,25 @@
     <div id="main-menu" class="page">
         <div class="header"><h2>Control Panel</h2></div>
         <div class="menu-grid">
-            <div class="menu-card" onclick="openModule('jobwork-page')">
-                <span style="font-size: 50px;">⚖️</span>
-                <h2>Karigar Jobwork</h2>
-            </div>
-            <div class="menu-card" onclick="openModule('cash-page')">
-                <span style="font-size: 50px;">💸</span>
-                <h2>Karigar Cash</h2>
-            </div>
+            <div class="menu-card" onclick="openModule('jobwork-page')"><span>⚖️</span><h2>Karigar Jobwork</h2></div>
+            <div class="menu-card" onclick="openModule('cash-page')"><span>💸</span><h2>Karigar Cash</h2></div>
         </div>
     </div>
 
     <div id="jobwork-page" class="page">
         <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
-        <div class="header">
-            <img class="shopLogoSmall" src="" style="width:50px; height:50px; border-radius:50%; vertical-align: middle;">
-            <div id="syncStatus" style="font-size:12px; color:#888; font-weight:900;">☁ CONNECTED</div>
-        </div>
-        
+        <div class="header"><img class="shopLogoSmall" src="" style="width:50px; height:50px; border-radius:50%; vertical-align: middle;"><div id="syncStatus" style="font-size:12px; color:#888; font-weight:900;">☁ CONNECTED</div></div>
         <select id="karigarSelector" onchange="switchKarigar()"></select>
         <button class="btn-nav" onclick="showModal()">+ NEW REGISTRATION</button>
         <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generatePDF()">📄 DOWNLOAD GOLD SLIP</button>
 
         <div class="input-card dr-card">
-            <div style="display:flex; gap:5px;"><input type="text" id="drDate" placeholder="Date"><input type="text" id="drSaman" placeholder="Saman"><input type="number" id="drWt" step="0.001" placeholder="Wt"></div>
+            <div style="display:flex; gap:5px;"><input type="text" id="drDate" placeholder="Date (Auto)"><input type="text" id="drSaman" placeholder="Saman"><input type="number" id="drWt" step="0.001" placeholder="Wt"></div>
             <button class="btn-footer" style="background:var(--debit-red);" onclick="addEntry('Dr')">ADD ISSUE (DR)</button>
         </div>
 
         <div class="input-card cr-card">
-            <div style="display:flex; gap:5px;"><input type="text" id="crDate" placeholder="Date"><input type="text" id="crSaman" placeholder="Saman"><input type="number" id="crWt" step="0.001" placeholder="Wt"></div>
+            <div style="display:flex; gap:5px;"><input type="text" id="crDate" placeholder="Date (Auto)"><input type="text" id="crSaman" placeholder="Saman"><input type="number" id="crWt" step="0.001" placeholder="Wt"></div>
             <button class="btn-footer" style="background:var(--credit-green);" onclick="addEntry('Cr')">ADD JAMA (CR)</button>
         </div>
 
@@ -122,36 +102,27 @@
     <div id="cash-page" class="page">
         <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
         <div class="header"><h2>Karigar Cash</h2></div>
-        
         <select id="cashKarigarSelector" onchange="switchCashKarigar()"></select>
         <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generateCashPDF()">📄 DOWNLOAD CASH SLIP</button>
 
         <div class="input-card" style="border-top: 5px solid var(--navy);">
-            <div style="display:flex; gap:5px;"><input type="text" id="cashDate" placeholder="Date"><input type="text" id="cashPart" placeholder="Particular (GPay/Cash)"></div>
+            <div style="display:flex; gap:5px;"><input type="text" id="cashDate" placeholder="Date (Auto)"><input type="text" id="cashPart" placeholder="Particular"></div>
             <div style="display:flex; gap:5px; margin-top:5px;">
                 <input type="number" id="cashAmt" placeholder="Amount ₹">
-                <select id="cashType" style="margin-bottom:0; width:40%;">
-                    <option value="Paid">PAID</option>
-                    <option value="Recd">RECD</option>
-                </select>
+                <select id="cashType" style="margin-bottom:0; width:40%;"><option value="Paid">PAID</option><option value="Recd">RECD</option></select>
             </div>
             <button class="btn-footer" style="background:var(--navy);" onclick="addCashEntry()">SAVE CASH ENTRY</button>
         </div>
 
         <div class="table-wrap">
             <table>
-                <thead>
-                    <tr><th>Date</th><th>Particular</th><th>Paid</th><th>Recd</th><th>Balance</th><th>X</th></tr>
-                </thead>
+                <thead><tr><th>Date</th><th>Particular</th><th>Paid</th><th>Recd</th><th>Balance</th><th>Action</th></tr></thead>
                 <tbody id="cashTableBody"></tbody>
             </table>
         </div>
 
         <div class="summary">
-            <div class="stat-card full-width-card amount-card">
-                <small>TOTAL CASH BALANCE</small>
-                <div id="dispCashBal">₹0</div>
-            </div>
+            <div class="stat-card full-width-card amount-card"><small>TOTAL CASH BALANCE</small><div id="dispCashBal">₹0</div></div>
         </div>
     </div>
 </div>
@@ -159,9 +130,7 @@
 <div id="modal">
     <div style="background:white; padding:25px; border-radius:12px; width:90%; max-width:400px;">
         <h2 style="text-align:center;">Register Karigar</h2>
-        <input type="text" id="newName" placeholder="Karigar Name">
-        <input type="tel" id="newPhone" placeholder="Phone Number">
-        <input type="text" id="newAddress" placeholder="Address">
+        <input type="text" id="newName" placeholder="Karigar Name"><input type="tel" id="newPhone" placeholder="Phone Number"><input type="text" id="newAddress" placeholder="Address">
         <button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">SAVE PROFILE</button>
         <button class="btn-footer" style="background:#999;" onclick="hideModal()">CANCEL</button>
     </div>
@@ -173,7 +142,6 @@
     let masterData = {};
     let currentId = "";
 
-    // Load logo on start
     window.onload = () => {
         const savedLogo = localStorage.getItem('shopLogo');
         if(savedLogo) {
@@ -185,7 +153,7 @@
     function uploadLogo(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = (e) => {
                 document.getElementById('shopLogo').src = e.target.result;
                 document.querySelectorAll('.shopLogoSmall').forEach(img => img.src = e.target.result);
                 localStorage.setItem('shopLogo', e.target.result);
@@ -195,10 +163,8 @@
     }
 
     function checkPass() {
-        if(document.getElementById('passInput').value === SHOP_PASS) {
-            openModule('main-menu');
-            loadFromServer();
-        } else { alert("Wrong Password!"); }
+        if(document.getElementById('passInput').value === SHOP_PASS) { openModule('main-menu'); loadFromServer(); } 
+        else { alert("Wrong Password!"); }
     }
 
     function openModule(id) {
@@ -236,26 +202,46 @@
         currentId = id; saveData(); hideModal(); refreshUI();
     }
 
-    // Rest of your restored Jobwork Logic
     function addEntry(type) {
         if(!currentId) return;
         const wt = parseFloat(document.getElementById(type.toLowerCase() + 'Wt').value);
         if (isNaN(wt)) return;
+        
+        const now = new Date();
+        const autoTime = now.toLocaleDateString('en-GB') + " " + now.getHours() + ":" + (now.getMinutes()<10?'0':'') + now.getMinutes();
+        
         let entry = { 
-            date: document.getElementById(type.toLowerCase() + 'Date').value || new Date().toLocaleDateString('en-GB'), 
+            date: document.getElementById(type.toLowerCase() + 'Date').value || autoTime, 
             saman: document.getElementById(type.toLowerCase() + 'Saman').value || "Gold", 
             wt: wt 
         };
         if (type === 'Cr') {
-            if (wt < 1) { entry.rounded = 0; }
-            else {
-                let d = parseFloat((wt - Math.floor(wt)).toFixed(2));
-                entry.rounded = (d < 0.35) ? Math.floor(wt) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(wt) + 1);
-            }
+            let d = parseFloat((wt - Math.floor(wt)).toFixed(2));
+            entry.rounded = (wt < 1) ? 0 : (d < 0.35) ? Math.floor(wt) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(wt) + 1);
         }
         masterData[currentId][type.toLowerCase()].push(entry);
         saveData(); renderTable();
         document.getElementById(type.toLowerCase() + 'Wt').value = '';
+        document.getElementById(type.toLowerCase() + 'Saman').value = '';
+        document.getElementById(type.toLowerCase() + 'Date').value = '';
+    }
+
+    function editRow(type, idx) {
+        const item = masterData[currentId][type.toLowerCase()][idx];
+        document.getElementById(type.toLowerCase() + 'Date').value = item.date;
+        document.getElementById(type.toLowerCase() + 'Saman').value = item.saman;
+        document.getElementById(type.toLowerCase() + 'Wt').value = item.wt;
+        masterData[currentId][type.toLowerCase()].splice(idx, 1);
+        renderTable();
+    }
+
+    function editNetManual(idx) {
+        const currentVal = masterData[currentId].cr[idx].rounded;
+        const newVal = prompt("Edit Net Value:", currentVal);
+        if (newVal !== null) {
+            masterData[currentId].cr[idx].rounded = parseFloat(newVal);
+            saveData(); renderTable();
+        }
     }
 
     function calculate() {
@@ -282,10 +268,10 @@
             const dr = k.dr[i]; const cr = k.cr[i];
             body.innerHTML += `<tr>
                 <td>${dr ? dr.date : '-'}</td><td>${dr ? dr.saman : '-'}</td>
-                <td style="background:#fffafa;">${dr ? dr.wt.toFixed(3) : '-'} ${dr ? `<button class="btn-del-row" onclick="deleteRow('Dr', ${i})">x</button>` : ''}</td>
+                <td style="background:#fffafa;">${dr ? dr.wt.toFixed(3) : '-'} ${dr ? `<br><button class="btn-edit-row" onclick="editRow('Dr', ${i})">✎</button><button class="btn-del-row" onclick="deleteRow('Dr', ${i})">x</button>` : ''}</td>
                 <td>${cr ? cr.date : '-'}</td><td>${cr ? cr.saman : '-'}</td>
-                <td style="background:#fafffa;">${cr ? cr.wt.toFixed(3) : '-'} ${cr ? `<button class="btn-del-row" onclick="deleteRow('Cr', ${i})">x</button>` : ''}</td>
-                <td style="font-weight:900">${cr ? cr.rounded.toFixed(1) : '-'}</td>
+                <td style="background:#fafffa;">${cr ? cr.wt.toFixed(3) : '-'} ${cr ? `<br><button class="btn-edit-row" onclick="editRow('Cr', ${i})">✎</button><button class="btn-del-row" onclick="deleteRow('Cr', ${i})">x</button>` : ''}</td>
+                <td class="editable-net" onclick="editNetManual(${i})">${cr ? cr.rounded.toFixed(1) : '-'}</td>
             </tr>`;
         }
         calculate();
@@ -295,15 +281,27 @@
         if(!currentId) return;
         const amt = parseFloat(document.getElementById('cashAmt').value);
         if(isNaN(amt)) return;
+        const now = new Date();
+        const autoTime = now.toLocaleDateString('en-GB') + " " + now.getHours() + ":" + (now.getMinutes()<10?'0':'') + now.getMinutes();
         if(!masterData[currentId].cash) masterData[currentId].cash = [];
         masterData[currentId].cash.push({
-            date: document.getElementById('cashDate').value || new Date().toLocaleDateString('en-GB'),
+            date: document.getElementById('cashDate').value || autoTime,
             part: document.getElementById('cashPart').value || "Cash",
             type: document.getElementById('cashType').value,
             amt: amt
         });
         saveData(); renderCashTable();
-        document.getElementById('cashAmt').value = '';
+        document.getElementById('cashAmt').value = ''; document.getElementById('cashPart').value = ''; document.getElementById('cashDate').value = '';
+    }
+
+    function editCashRow(idx) {
+        const item = masterData[currentId].cash[idx];
+        document.getElementById('cashDate').value = item.date;
+        document.getElementById('cashPart').value = item.part;
+        document.getElementById('cashAmt').value = item.amt;
+        document.getElementById('cashType').value = item.type;
+        masterData[currentId].cash.splice(idx, 1);
+        renderCashTable();
     }
 
     function renderCashTable() {
@@ -311,10 +309,8 @@
         let k = masterData[currentId]; if(!k || !k.cash) return;
         let bal = 0;
         k.cash.forEach((c, idx) => {
-            let paid = c.type === 'Paid' ? c.amt : 0;
-            let recd = c.type === 'Recd' ? c.amt : 0;
-            bal += (paid - recd);
-            body.innerHTML += `<tr><td>${c.date}</td><td>${c.part}</td><td style="color:red;">${paid || '-'}</td><td style="color:green;">${recd || '-'}</td><td>₹${bal}</td><td><button class="btn-del-row" onclick="deleteCash(${idx})">x</button></td></tr>`;
+            let paid = c.type === 'Paid' ? c.amt : 0; let recd = c.type === 'Recd' ? c.amt : 0; bal += (paid - recd);
+            body.innerHTML += `<tr><td>${c.date}</td><td>${c.part}</td><td style="color:red;">${paid || '-'}</td><td style="color:green;">${recd || '-'}</td><td>₹${bal}</td><td><button class="btn-edit-row" onclick="editCashRow(${idx})">✎</button><button class="btn-del-row" onclick="deleteCash(${idx})">x</button></td></tr>`;
         });
         document.getElementById('dispCashBal').innerText = "₹" + bal;
     }
@@ -335,20 +331,14 @@
 
     function switchKarigar() { currentId = document.getElementById('karigarSelector').value; refreshUI(); }
     function switchCashKarigar() { currentId = document.getElementById('cashKarigarSelector').value; refreshUI(); }
-    function deleteRow(type, index) { if(confirm("Delete?")) { (type === 'Dr' ? masterData[currentId].dr : masterData[currentId].cr).splice(index, 1); saveData(); renderTable(); } }
+    function deleteRow(type, index) { if(confirm("Delete?")) { masterData[currentId][type.toLowerCase()].splice(index, 1); saveData(); renderTable(); } }
     function deleteCash(idx) { if(confirm("Delete?")) { masterData[currentId].cash.splice(idx, 1); saveData(); renderCashTable(); } }
     function deleteKarigar() { if(confirm("Delete Profile?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); } }
 
     function generatePDF() {
         const k = masterData[currentId]; if(!k) return;
         const logo = localStorage.getItem('shopLogo') || '';
-        let pdfHTML = `<div style="padding:20px; text-align:center; font-family:sans-serif;">
-            ${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}
-            <h2 style="margin:5px 0;">GOPI JEWELLERS</h2>
-            <p>Karigar: <b>${k.name}</b> | Phone: ${k.phone} <br> Address: ${k.address}</p>
-            <table style="width:100%; border-collapse:collapse; font-size:10px; margin-top:10px;">
-                <thead style="background:#eee;"><tr><th>Dr Date</th><th>Saman</th><th>Wt</th><th>Cr Date</th><th>Saman</th><th>Wt</th><th>Net</th></tr></thead>
-                <tbody>`;
+        let pdfHTML = `<div style="padding:20px; text-align:center; font-family:sans-serif;">${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}<h2 style="margin:5px 0;">GOPI JEWELLERS</h2><p>Karigar: <b>${k.name}</b> | Phone: ${k.phone} <br> Address: ${k.address}</p><table style="width:100%; border-collapse:collapse; font-size:10px; margin-top:10px;"><thead style="background:#eee;"><tr><th>Dr Date</th><th>Saman</th><th>Wt</th><th>Cr Date</th><th>Saman</th><th>Wt</th><th>Net</th></tr></thead><tbody>`;
         const rows = Math.max(k.dr.length, k.cr.length);
         for (let i = 0; i < rows; i++) {
             pdfHTML += `<tr><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.saman || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.saman || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1) || '-'}</td></tr>`;
@@ -361,17 +351,9 @@
         const k = masterData[currentId]; if(!k) return;
         const logo = localStorage.getItem('shopLogo') || '';
         let bal = 0;
-        let pdfHTML = `<div style="padding:20px; text-align:center; font-family:sans-serif;">
-            ${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}
-            <h2 style="margin:5px 0;">GOPI JEWELLERS</h2>
-            <p>Karigar: <b>${k.name}</b> | Phone: ${k.phone} <br> Address: ${k.address}</p>
-            <table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;">
-                <thead style="background:#eee;"><tr><th>Date</th><th>Particular</th><th>Paid (Dr)</th><th>Recd (Cr)</th><th>Balance</th></tr></thead>
-                <tbody>`;
+        let pdfHTML = `<div style="padding:20px; text-align:center; font-family:sans-serif;">${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}<h2 style="margin:5px 0;">GOPI JEWELLERS</h2><p>Karigar: <b>${k.name}</b> | Phone: ${k.phone} <br> Address: ${k.address}</p><table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;"><thead style="background:#eee;"><tr><th>Date</th><th>Particular</th><th>Paid (Dr)</th><th>Recd (Cr)</th><th>Balance</th></tr></thead><tbody>`;
         k.cash.forEach(c => {
-            let paid = c.type === 'Paid' ? c.amt : 0;
-            let recd = c.type === 'Recd' ? c.amt : 0;
-            bal += (paid - recd);
+            let paid = c.type === 'Paid' ? c.amt : 0; let recd = c.type === 'Recd' ? c.amt : 0; bal += (paid - recd);
             pdfHTML += `<tr><td style="border:1px solid #ddd; padding:8px;">${c.date}</td><td style="border:1px solid #ddd; padding:8px;">${c.part}</td><td style="border:1px solid #ddd; padding:8px; color:red;">${paid || '-'}</td><td style="border:1px solid #ddd; padding:8px; color:green;">${recd || '-'}</td><td style="border:1px solid #ddd; padding:8px; font-weight:bold;">₹${bal}</td></tr>`;
         });
         pdfHTML += `</tbody></table><h3 style="margin-top:20px; color:#1e3a8a;">Final Cash Balance: ₹${bal}</h3></div>`;
