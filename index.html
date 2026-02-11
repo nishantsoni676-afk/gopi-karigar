@@ -7,78 +7,65 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { --gold: #d4af37; --dark: #1a1a1a; --debit-red: #e74c3c; --credit-green: #27ae60; --navy: #1e3a8a; }
-        body { font-family: -apple-system, sans-serif; background: #f0f2f5; margin: 0; padding: 10px; }
-        .container { background: white; max-width: 600px; margin: auto; border-radius: 12px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); box-sizing: border-box; }
-        .header { text-align: center; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 15px; }
-        .manager-bar { background: var(--dark); color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-        select, .btn-nav { width: 100%; padding: 12px; border-radius: 6px; border: none; font-weight: bold; margin-bottom: 8px; font-size: 14px; cursor: pointer; }
+        body { font-family: -apple-system, sans-serif; background: #f0f2f5; margin: 0; padding: 5px; }
+        .container { background: white; width: 100%; max-width: 500px; margin: auto; border-radius: 8px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); box-sizing: border-box; }
+        .header { text-align: center; border-bottom: 2px solid var(--gold); padding-bottom: 5px; margin-bottom: 10px; }
+        .manager-bar { background: var(--dark); color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
+        select, .btn-nav { width: 100%; padding: 10px; border-radius: 6px; border: none; font-weight: bold; margin-bottom: 5px; font-size: 13px; cursor: pointer; }
         .btn-nav { background: var(--gold); color: var(--dark); }
-        .input-card { padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #ddd; }
-        .dr-card { border-left: 8px solid var(--debit-red); background: #fff5f5; }
-        .cr-card { border-left: 8px solid var(--credit-green); background: #f5fff5; }
-        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; box-sizing: border-box; margin-top: 5px; }
+        .input-card { padding: 8px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #ddd; }
+        .dr-card { border-left: 5px solid var(--debit-red); background: #fff5f5; }
+        .cr-card { border-left: 5px solid var(--credit-green); background: #f5fff5; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; box-sizing: border-box; margin-top: 4px; }
         
-        /* SCROLLABLE TABLE CSS */
-        .table-wrap { 
-            max-height: 350px; 
-            overflow-y: auto; 
-            overflow-x: auto; 
-            margin: 15px 0; 
-            border: 1px solid #ddd; 
-            border-radius: 8px;
-            position: relative;
-        }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; font-size: 12px; }
+        /* SCROLLABLE TABLE */
+        .table-wrap { max-height: 280px; overflow-y: auto; overflow-x: auto; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; }
+        table { width: 100%; border-collapse: collapse; min-width: 550px; font-size: 11px; }
+        thead th { position: sticky; top: 0; background: #f8f9fa; z-index: 10; border-bottom: 1px solid #ddd; padding: 8px; }
+        td { padding: 6px; text-align: center; border: 1px solid #f0f0f0; }
         
-        /* Sticky Header logic */
-        thead th { 
-            position: sticky; 
-            top: 0; 
-            background: #f8f9fa; 
-            z-index: 10; 
-            border-bottom: 2px solid #ddd; 
-        }
-        th { padding: 10px; border: 1px solid #ddd; font-size: 11px; }
-        td { padding: 8px; text-align: center; border: 1px solid #f0f0f0; }
+        .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 3px 6px; border-radius: 3px; font-size: 9px; cursor: pointer; }
+
+        /* SUMMARY GRID - COMPACT FOR MOBILE */
+        .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+        .stat-card { background: var(--dark); color: white; padding: 8px; border-radius: 6px; text-align: center; }
+        .stat-card small { font-size: 9px; color: #aaa; text-transform: uppercase; }
+        .stat-card div { font-size: 14px; font-weight: bold; color: var(--gold); margin-top: 2px; }
         
-        .editable:hover { background: #e8f0fe; cursor: pointer; }
-        .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold; }
-        .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .stat-card { background: var(--dark); color: white; padding: 12px; border-radius: 8px; text-align: center; }
-        .stat-card div { font-size: 16px; font-weight: bold; color: var(--gold); margin-top: 5px; }
-        .full-width-card { grid-column: span 2; padding: 18px; border: 1px solid var(--gold); }
+        .full-width-card { grid-column: span 2; padding: 12px; border: 1px solid var(--gold); }
         .fine-card { background: #2c3e50; }
-        .fine-card div { color: white !important; font-size: 22px; }
+        .fine-card div { color: white !important; font-size: 18px; }
         .amount-card { background: var(--navy); border: 2px solid var(--gold); }
-        .amount-card div { color: var(--gold) !important; font-size: 32px; font-weight: bold; }
-        .btn-footer { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; margin-top: 10px; }
-        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
-        #login-screen { text-align: center; padding: 50px 20px; }
+        .amount-card div { color: var(--gold) !important; font-size: 24px; font-weight: bold; }
+        
+        .btn-footer { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; margin-top: 8px; font-size: 13px; }
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 10px; box-sizing: border-box; }
+        #login-screen { text-align: center; padding: 40px 10px; }
     </style>
 </head>
 <body>
 
 <div id="login-screen" class="container">
-    <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:100px; margin-bottom: 20px;">
+    <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:80px; margin-bottom: 15px;">
     <h2>Gopi Jewellers</h2>
-    <input type="password" id="passInput" placeholder="Enter Password" autofocus>
+    <input type="password" id="passInput" placeholder="Password" autofocus>
     <button class="btn-footer" style="background:var(--gold); color:var(--dark);" onclick="checkPass()">LOGIN</button>
 </div>
 
 <div id="app-content" class="container" style="display:none;">
     <div class="header">
-        <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;">
-        <div id="syncStatus" style="font-size:10px; color:#888;">☁ Initializing...</div>
+        <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:50px;">
+        <div id="syncStatus" style="font-size:9px; color:#888;">☁ Syncing...</div>
     </div>
 
     <div class="manager-bar">
         <select id="karigarSelector" onchange="switchKarigar()"></select>
-        <button class="btn-nav" onclick="showModal()">+ New Karigar Registration</button>
-        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generatePDF()">📄 Download PDF Slip</button>
+        <button class="btn-nav" onclick="showModal()">+ New Registration</button>
+        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generatePDF()">📄 Download PDF</button>
     </div>
 
     <div class="input-card dr-card">
-        <div style="display:flex; gap:5px;">
+        <div style="display:flex; gap:3px;">
             <input type="text" id="drDate" placeholder="Date">
             <input type="text" id="drSaman" placeholder="Saman">
             <input type="number" id="drWt" step="0.001" placeholder="Wt">
@@ -87,7 +74,7 @@
     </div>
 
     <div class="input-card cr-card">
-        <div style="display:flex; gap:5px;">
+        <div style="display:flex; gap:3px;">
             <input type="text" id="crDate" placeholder="Date">
             <input type="text" id="crSaman" placeholder="Saman">
             <input type="number" id="crWt" step="0.001" placeholder="Wt">
@@ -95,9 +82,9 @@
         <button class="btn-footer" style="background:var(--credit-green);" onclick="addEntry('Cr')">ADD JAMA (CR)</button>
     </div>
 
-    <div style="padding:10px; background:#eee; border-radius:8px;">
-        <label style="font-size:12px; font-weight:bold;">Gold Rate (₹)</label>
-        <input type="number" id="rate" oninput="calculate()" placeholder="Enter Rate">
+    <div style="padding:8px; background:#eee; border-radius:6px; display: flex; align-items: center; justify-content: space-between;">
+        <label style="font-size:11px; font-weight:bold;">Rate:</label>
+        <input type="number" id="rate" oninput="calculate()" placeholder="₹ Rate" style="width: 70%; margin-top: 0;">
     </div>
 
     <div class="table-wrap">
@@ -111,27 +98,30 @@
     </div>
 
     <div class="summary">
-        <div class="stat-card">Total Dr<div id="dispDr">0.000</div></div>
-        <div class="stat-card">Total Cr<div id="dispCr">0.000</div></div>
-        <div class="stat-card">Total Net<div id="dispTotalNet">0.0</div></div>
-        <div class="stat-card">Balance<div id="dispBal">0.000</div></div>
+        <div class="stat-card"><small>Total Dr</small><div id="dispDr">0.000</div></div>
+        <div class="stat-card"><small>Total Cr</small><div id="dispCr">0.000</div></div>
+        <div class="stat-card"><small>Total Net</small><div id="dispTotalNet">0.0</div></div>
+        <div class="stat-card"><small>Balance</small><div id="dispBal">0.000</div></div>
+        
         <div class="stat-card full-width-card fine-card">
-            <small style="text-transform:uppercase; font-size:11px; color:#aaa;">Kam Fine (91.60)</small>
+            <small>Kam Fine (91.60)</small>
             <div id="dispNet">0.00000</div>
         </div>
+        
         <div class="stat-card full-width-card amount-card">
-            <small style="text-transform:uppercase; font-size:12px; color:#cbd5e1;">Settlement Amount</small>
+            <small>Settlement Amount</small>
             <div id="dispRs">₹0</div>
         </div>
     </div>
-    <button class="btn-footer" style="background:#e74c3c" onclick="deleteKarigar()">Delete This Profile Permanently</button>
+    
+    <button class="btn-footer" style="background:#e74c3c" onclick="deleteKarigar()">Delete Profile</button>
 </div>
 
 <div id="modal">
-    <div style="background:white; padding:20px; border-radius:12px; width:90%; max-width:400px;">
+    <div style="background:white; padding:15px; border-radius:8px; width:95%; max-width:350px;">
         <h3>Register Karigar</h3>
-        <label>Name</label><input type="text" id="newName">
-        <label>Phone</label><input type="text" id="newPhone">
+        <input type="text" id="newName" placeholder="Karigar Name">
+        <input type="text" id="newPhone" placeholder="Phone">
         <button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">Save</button>
         <button class="btn-footer" style="background:#999;" onclick="hideModal()">Cancel</button>
     </div>
@@ -158,9 +148,9 @@
             masterData = text.trim() ? JSON.parse(text) : {};
             currentId = localStorage.getItem('gopi_active_id') || Object.keys(masterData)[0] || "";
             refreshUI();
-            document.getElementById('syncStatus').innerText = "✅ Cloud Connected";
+            document.getElementById('syncStatus').innerText = "✅ Online";
         } catch (err) {
-            document.getElementById('syncStatus').innerText = "📶 Offline Mode";
+            document.getElementById('syncStatus').innerText = "📶 Offline";
             masterData = JSON.parse(localStorage.getItem('gopi_master_cloud')) || {};
             refreshUI();
         }
@@ -170,7 +160,7 @@
         document.getElementById('syncStatus').innerText = "⏳ Saving...";
         try {
             await fetch(CLOUD_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(masterData) });
-            document.getElementById('syncStatus').innerText = "✅ Saved to Cloud";
+            document.getElementById('syncStatus').innerText = "✅ Saved";
         } catch (err) { document.getElementById('syncStatus').innerText = "❌ Sync Error"; }
     }
 
@@ -209,27 +199,8 @@
         }
         masterData[currentId][type.toLowerCase()].push(entry);
         saveData(); renderTable();
-        
-        // Scroll to bottom of table after adding
         const tableWrap = document.querySelector('.table-wrap');
         tableWrap.scrollTop = tableWrap.scrollHeight;
-    }
-
-    function editCell(type, index, field) {
-        let k = masterData[currentId];
-        let arr = (type === 'Dr') ? k.dr : k.cr;
-        let newVal = prompt(`Edit ${field}:`, arr[index][field]);
-        if (newVal !== null) {
-            arr[index][field] = (field === 'wt' || field === 'rounded') ? parseFloat(newVal) : newVal;
-            saveData(); renderTable();
-        }
-    }
-
-    function deleteRow(type, index) {
-        if(confirm("Delete this entry?")) {
-            (type === 'Dr' ? masterData[currentId].dr : masterData[currentId].cr).splice(index, 1);
-            saveData(); renderTable();
-        }
     }
 
     function calculate() {
@@ -260,13 +231,13 @@
         for (let i = 0; i < rows; i++) {
             const dr = k.dr[i]; const cr = k.cr[i];
             body.innerHTML += `<tr>
-                <td class="editable" onclick="editCell('Dr', ${i}, 'date')">${dr ? dr.date : '-'}</td>
-                <td class="editable" onclick="editCell('Dr', ${i}, 'saman')">${dr ? dr.saman : '-'}</td>
+                <td>${dr ? dr.date : '-'}</td>
+                <td>${dr ? dr.saman : '-'}</td>
                 <td style="background:#fffafa;">${dr ? dr.wt.toFixed(3) : '-'} ${dr ? `<button class="btn-del-row" onclick="deleteRow('Dr', ${i})">x</button>` : ''}</td>
-                <td class="editable" onclick="editCell('Cr', ${i}, 'date')">${cr ? cr.date : '-'}</td>
-                <td class="editable" onclick="editCell('Cr', ${i}, 'saman')">${cr ? cr.saman : '-'}</td>
-                <td class="editable" onclick="editCell('Cr', ${i}, 'wt')" style="background:#fafffa;">${cr ? cr.wt.toFixed(3) : '-'} ${cr ? `<button class="btn-del-row" onclick="deleteRow('Cr', ${i})">x</button>` : ''}</td>
-                <td class="editable" onclick="editCell('Cr', ${i}, 'rounded')" style="font-weight:bold">${cr ? cr.rounded.toFixed(1) : '-'}</td>
+                <td>${cr ? cr.date : '-'}</td>
+                <td>${cr ? cr.saman : '-'}</td>
+                <td style="background:#fafffa;">${cr ? cr.wt.toFixed(3) : '-'} ${cr ? `<button class="btn-del-row" onclick="deleteRow('Cr', ${i})">x</button>` : ''}</td>
+                <td style="font-weight:bold">${cr ? cr.rounded.toFixed(1) : '-'}</td>
             </tr>`;
         }
         calculate();
@@ -285,44 +256,30 @@
     }
 
     function switchKarigar() { currentId = document.getElementById('karigarSelector').value; localStorage.setItem('gopi_active_id', currentId); refreshUI(); }
-    function deleteKarigar() { if(confirm("Permanently delete this Karigar?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); } }
+    function deleteKarigar() { if(confirm("Delete Profile?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); } }
+    function deleteRow(type, index) { if(confirm("Delete entry?")) { (type === 'Dr' ? masterData[currentId].dr : masterData[currentId].cr).splice(index, 1); saveData(); renderTable(); } }
 
     function generatePDF() {
         const k = masterData[currentId];
-        let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">
-            <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;">
-            <h2 style="margin:5px 0;">GOPI JEWELLERS</h2>
-            <p style="margin:5px 0;"><b>Karigar:</b> ${k.name} | <b>Rate:</b> ₹${k.rate}</p>
-            <table style="width:100%; border-collapse:collapse; font-size:10px; margin-top:10px;">
-                <thead>
-                    <tr style="background:#eee;">
-                        <th style="border:1px solid #ddd; padding:5px;">Dr Date</th>
-                        <th style="border:1px solid #ddd; padding:5px;">Dr Saman</th>
-                        <th style="border:1px solid #ddd; padding:5px;">Dr Wt</th>
-                        <th style="border:1px solid #ddd; padding:5px;">Cr Date</th>
-                        <th style="border:1px solid #ddd; padding:5px;">Cr Saman</th>
-                        <th style="border:1px solid #ddd; padding:5px;">Total Cr</th>
-                        <th style="border:1px solid #ddd; padding:5px;">Net</th>
-                    </tr>
-                </thead>
+        let pdfHTML = `<div style="padding:10px; font-family:sans-serif; text-align:center;">
+            <h3>GOPI JEWELLERS</h3>
+            <p>Karigar: ${k.name}</p>
+            <table style="width:100%; border-collapse:collapse; font-size:10px;">
+                <thead><tr style="background:#eee;"><th>Date</th><th>Dr Wt</th><th>Cr Wt</th><th>Net</th></tr></thead>
                 <tbody>`;
         const rows = Math.max(k.dr.length, k.cr.length);
         for (let i = 0; i < rows; i++) {
             pdfHTML += `<tr>
-                <td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date || '-'}</td>
-                <td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.saman || '-'}</td>
-                <td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3) || '-'}</td>
-                <td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.date || '-'}</td>
-                <td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.saman || '-'}</td>
-                <td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3) || '-'}</td>
-                <td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1) || '-'}</td>
+                <td style="border:1px solid #ddd; padding:4px;">${k.dr[i]?.date || k.cr[i]?.date || '-'}</td>
+                <td style="border:1px solid #ddd; padding:4px;">${k.dr[i]?.wt.toFixed(3) || '-'}</td>
+                <td style="border:1px solid #ddd; padding:4px;">${k.cr[i]?.wt.toFixed(3) || '-'}</td>
+                <td style="border:1px solid #ddd; padding:4px;">${k.cr[i]?.rounded.toFixed(1) || '-'}</td>
             </tr>`;
         }
-        pdfHTML += `</table><div style="background:#1e3a8a; color:#d4af37; padding:15px; margin-top:20px; border-radius:10px; text-align:center;">
-            <p style="margin:0; color:white; font-size:12px;">Total Net: ${document.getElementById('dispTotalNet').innerText} | Fine: ${document.getElementById('dispNet').innerText}</p>
-            <h2 style="margin:10px 0;">Total Settlement: ${document.getElementById('dispRs').innerText}</h2>
+        pdfHTML += `</tbody></table><div style="background:#1e3a8a; color:white; padding:10px; margin-top:10px;">
+            <h3>Total: ${document.getElementById('dispRs').innerText}</h3>
         </div></div>`;
-        html2pdf().from(pdfHTML).set({ margin: 5, filename: `${k.name}_Slip.pdf`, html2canvas: { scale: 2 } }).save();
+        html2pdf().from(pdfHTML).save(`${k.name}.pdf`);
     }
 </script>
 </body>
