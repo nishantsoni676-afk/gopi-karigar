@@ -12,39 +12,28 @@
         .page { display: none; flex-direction: column; padding: 10px; box-sizing: border-box; min-height: 100vh; }
         .page.active { display: flex; }
         .header { text-align: center; border-bottom: 3px solid var(--gold); padding-bottom: 8px; margin-bottom: 12px; }
-        
-        /* Menu Grid */
         .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 25px; flex-grow: 1; align-content: center; }
         .menu-card { background: var(--dark); color: white; padding: 40px 20px; border-radius: 15px; text-align: center; border: 3px solid var(--gold); cursor: pointer; }
         .menu-card h2 { margin: 10px 0 0; font-size: 24px; text-transform: uppercase; font-weight: 900; }
-
-        /* Inputs & Buttons */
         input, select, .btn-nav { width: 100%; padding: 15px; border-radius: 8px; border: 2px solid #ccc; font-weight: bold; margin-bottom: 8px; font-size: 16px; box-sizing: border-box; }
         .btn-nav { background: var(--gold); color: var(--dark); text-transform: uppercase; border: none; cursor: pointer; }
         .btn-footer { width: 100%; padding: 20px; border: none; border-radius: 10px; font-weight: 900; color: white; margin-top: 10px; font-size: 20px; cursor: pointer; }
-        
         .input-card { padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 2px solid #ddd; }
         .dr-card { border-left: 10px solid var(--debit-red); background: #fffafa; }
         .cr-card { border-left: 10px solid var(--credit-green); background: #fafffa; }
-        
         .table-wrap { flex-grow: 1; min-height: 350px; overflow: auto; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; background: white; }
         table { width: 100%; border-collapse: collapse; min-width: 650px; font-size: 14px; font-weight: bold; }
         th { position: sticky; top: 0; background: #eee; z-index: 10; border-bottom: 2px solid #ddd; padding: 10px; }
         td { padding: 10px; text-align: center; border: 1px solid #ddd; }
-        
-        .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin: 2px; cursor: pointer; }
-        .btn-edit-row { background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin: 2px; cursor: pointer; }
-
+        .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin: 2px; }
+        .btn-edit-row { background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin: 2px; }
         .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
         .stat-card { background: var(--dark); color: white; padding: 12px; border-radius: 8px; text-align: center; }
         .stat-card div { font-size: 20px; font-weight: 900; color: var(--gold); }
         .full-width-card { grid-column: span 2; padding: 15px; border: 2px solid var(--gold); }
         .amount-card { background: var(--navy); border: 3px solid var(--gold); }
-
         #modal, #editModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
-        .logo-container { cursor: pointer; position: relative; display: inline-block; margin-bottom: 20px; }
-        .logo-container::after { content: "Tap to Change Logo"; position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: white; font-size: 10px; padding: 4px; border-bottom-left-radius: 50%; border-bottom-right-radius: 50%; opacity: 0; transition: 0.3s; }
-        .logo-container:hover::after { opacity: 1; }
+        .logo-container { cursor: pointer; position: relative; display: inline-block; }
     </style>
 </head>
 <body>
@@ -52,7 +41,7 @@
 <div class="container">
     <div id="login-screen" class="page active" style="justify-content: center; align-items: center; text-align: center;">
         <div class="logo-container" onclick="document.getElementById('logoInput').click()">
-            <img id="shopLogo" src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:120px; height:120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--gold);">
+            <img id="shopLogo" src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:120px; height:120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--gold); margin-bottom: 20px;">
         </div>
         <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="uploadLogo(this)">
         <h1>Gopi Jewellers</h1>
@@ -76,6 +65,7 @@
         </div>
         <select id="karigarSelector" onchange="switchKarigar()"></select>
         <button class="btn-nav" onclick="showModal()">+ NEW REGISTRATION</button>
+
         <div class="input-card dr-card">
             <div style="display:flex; gap:5px;"><input type="text" id="drDate" placeholder="Date"><input type="text" id="drSaman" placeholder="Saman"><input type="number" id="drWt" step="0.001" placeholder="Wt"></div>
             <button class="btn-footer" style="background:var(--debit-red);" onclick="addEntry('dr')">ADD ISSUE (DR)</button>
@@ -85,15 +75,19 @@
             <button class="btn-footer" style="background:var(--credit-green);" onclick="addEntry('cr')">ADD JAMA (CR)</button>
         </div>
         <div style="padding:15px; background:#eee; border-radius:10px; display: flex; align-items: center; justify-content: space-between;">
-            <label style="font-weight:900;">GOLD RATE:</label>
+            <label style="font-size:18px; font-weight:900;">GOLD RATE:</label>
             <input type="number" id="rate" oninput="calculate()" placeholder="₹ Rate" style="width: 60%; margin-bottom: 0;">
         </div>
         <div class="table-wrap"><table><tbody id="ledgerBody"></tbody></table></div>
         <div class="summary">
             <div class="stat-card"><small>TOTAL DR</small><div id="dispDr">0.000</div></div>
             <div class="stat-card"><small>TOTAL CR</small><div id="dispCr">0.000</div></div>
+            <div class="stat-card"><small>TOTAL NET</small><div id="dispTotalNet">0.0</div></div>
+            <div class="stat-card"><small>BALANCE</small><div id="dispBal">0.000</div></div>
+            <div class="stat-card full-width-card" style="background:#2c3e50"><small>KAM FINE (91.00)</small><div id="dispNet">0.00000</div></div>
             <div class="stat-card full-width-card amount-card"><small>SETTLEMENT AMOUNT</small><div id="dispRs">₹0</div></div>
         </div>
+        <button class="btn-footer" style="background:#e74c3c; margin-bottom:30px;" onclick="deleteKarigar()">DELETE PROFILE</button>
     </div>
 
     <div id="cash-page" class="page">
@@ -137,16 +131,12 @@
     function uploadLogo(input) {
         if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = e => {
-                document.getElementById('shopLogo').src = e.target.result;
-                document.querySelectorAll('.shopLogoSmall').forEach(img => img.src = e.target.result);
-                localStorage.setItem('shopLogo', e.target.result);
-            };
+            reader.onload = e => { document.getElementById('shopLogo').src = e.target.result; document.querySelectorAll('.shopLogoSmall').forEach(img => img.src = e.target.result); localStorage.setItem('shopLogo', e.target.result); };
             reader.readAsDataURL(input.files[0]);
         }
     }
 
-    function checkPass() { if(document.getElementById('passInput').value === SHOP_PASS) { openModule('main-menu'); loadFromServer(); } else alert("Wrong!"); }
+    function checkPass() { if(document.getElementById('passInput').value === SHOP_PASS) { openModule('main-menu'); loadFromServer(); } else alert("Wrong Password!"); }
     function openModule(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); refreshUI(); }
     function showModal() { document.getElementById('modal').style.display = 'flex'; }
     function hideModal() { document.getElementById('modal').style.display = 'none'; }
@@ -165,10 +155,25 @@
     }
 
     function addEntry(type) {
+        if(!currentId) return;
         const wt = parseFloat(document.getElementById(type + 'Wt').value); if (isNaN(wt)) return;
         let entry = { date: document.getElementById(type + 'Date').value || new Date().toLocaleDateString('en-GB'), saman: document.getElementById(type + 'Saman').value || "Gold", wt: wt };
         if (type === 'cr') { let d = parseFloat((wt - Math.floor(wt)).toFixed(2)); entry.rounded = (wt < 1) ? 0 : (d < 0.35 ? Math.floor(wt) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(wt) + 1)); }
         masterData[currentId][type].push(entry); saveData(); renderTable(); document.getElementById(type + 'Wt').value = '';
+    }
+
+    function calculate() {
+        let k = masterData[currentId]; if(!k) return;
+        let r = parseFloat(document.getElementById('rate').value) || 0;
+        const tDr = k.dr.reduce((s, i) => s + i.wt, 0), tCr = k.cr.reduce((s, i) => s + i.wt, 0), tNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
+        const netBal = tDr - tCr;
+        const fine = ((tNet * 0.05) - netBal) * 0.91;
+        document.getElementById('dispDr').innerText = tDr.toFixed(3);
+        document.getElementById('dispCr').innerText = tCr.toFixed(3);
+        document.getElementById('dispTotalNet').innerText = tNet.toFixed(1);
+        document.getElementById('dispBal').innerText = netBal.toFixed(3);
+        document.getElementById('dispNet').innerText = fine.toFixed(5);
+        document.getElementById('dispRs').innerText = "₹" + Math.abs(Math.round(fine * r)).toLocaleString('en-IN');
     }
 
     function renderTable() {
@@ -177,10 +182,7 @@
         const rows = Math.max(k.dr.length, k.cr.length);
         for (let i = 0; i < rows; i++) {
             const dr = k.dr[i], cr = k.cr[i];
-            body.innerHTML += `<tr>
-                <td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td><td style="background:#fffafa;">${dr?dr.wt.toFixed(3):'-'}<br>${dr?`<button class="btn-edit-row" onclick="openEdit('dr', ${i})">✍</button><button class="btn-del-row" onclick="deleteRow('dr', ${i})">x</button>`:''}</td>
-                <td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td><td style="background:#fafffa;">${cr?cr.wt.toFixed(3):'-'}<br>${cr?`<button class="btn-edit-row" onclick="openEdit('cr', ${i})">✍</button><button class="btn-del-row" onclick="deleteRow('cr', ${i})">x</button>`:''}</td>
-                <td style="font-weight:900">${cr?cr.rounded.toFixed(1):'-'}</td></tr>`;
+            body.innerHTML += `<tr><td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td><td>${dr?dr.wt.toFixed(3):'-'}<br>${dr?`<button class="btn-edit-row" onclick="openEdit('dr', ${i})">✍</button><button class="btn-del-row" onclick="deleteRow('dr', ${i})">x</button>`:''}</td><td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td><td>${cr?cr.wt.toFixed(3):'-'}<br>${cr?`<button class="btn-edit-row" onclick="openEdit('cr', ${i})">✍</button><button class="btn-del-row" onclick="deleteRow('cr', ${i})">x</button>`:''}</td><td>${cr?cr.rounded.toFixed(1):'-'}</td></tr>`;
         }
         calculate();
     }
@@ -203,8 +205,7 @@
     }
 
     function openEdit(module, index) {
-        editingRef = { module, index };
-        const entry = masterData[currentId][module][index];
+        editingRef = { module, index }; const entry = masterData[currentId][module][index];
         document.getElementById('editDate').value = entry.date;
         document.getElementById('editSaman').value = module === 'cash' ? entry.part : entry.saman;
         document.getElementById('editVal').value = module === 'cash' ? entry.amt : entry.wt;
@@ -219,15 +220,6 @@
         if(module === 'cash') { entry.part = document.getElementById('editSaman').value; entry.amt = val; entry.type = document.getElementById('editCashType').value; }
         else { entry.saman = document.getElementById('editSaman').value; entry.wt = val; if(module === 'cr') { let d = parseFloat((val - Math.floor(val)).toFixed(2)); entry.rounded = (val < 1) ? 0 : (d < 0.35 ? Math.floor(val) : (d < 0.9 ? Math.floor(val) + 0.5 : Math.floor(val) + 1)); } }
         saveData(); document.getElementById('editModal').style.display = 'none'; refreshUI();
-    }
-
-    function calculate() {
-        let k = masterData[currentId]; if(!k) return;
-        let r = parseFloat(document.getElementById('rate').value) || 0;
-        const tDr = k.dr.reduce((s, i) => s + i.wt, 0), tCr = k.cr.reduce((s, i) => s + i.wt, 0), tNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
-        const fine = ((tNet * 0.05) - (tDr - tCr)) * 0.91;
-        document.getElementById('dispDr').innerText = tDr.toFixed(3); document.getElementById('dispCr').innerText = tCr.toFixed(3);
-        document.getElementById('dispRs').innerText = "₹" + Math.abs(Math.round(fine * r)).toLocaleString('en-IN');
     }
 
     function refreshUI() {
@@ -245,6 +237,7 @@
     function switchCashKarigar() { currentId = document.getElementById('cashKarigarSelector').value; refreshUI(); }
     function deleteRow(t, i) { if(confirm("Delete?")) { masterData[currentId][t].splice(i, 1); saveData(); renderTable(); } }
     function deleteCash(i) { if(confirm("Delete?")) { masterData[currentId].cash.splice(i, 1); saveData(); renderCashTable(); } }
+    function deleteKarigar() { if(confirm("Delete?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); openModule('main-menu'); } }
 </script>
 </body>
 </html>
