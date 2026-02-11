@@ -3,142 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/85zKzX68/1000207262.png">
-    <title>Gopi Karigar Cloud</title>
-    
+    <title>Gopi Jewellers Cloud</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
     <style>
-        :root { --gold: #d4af37; --dark: #1a1a1a; --debit-red: #e74c3c; --credit-green: #27ae60; --blue: #3498db; }
-        body { font-family: -apple-system, sans-serif; background-color: #f0f2f5; margin: 0; padding: 10px; }
-        .container { background: white; width: 100%; max-width: 650px; margin: auto; border-radius: 12px; padding: 15px; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
-        /* Login Screen */
-        #login-screen { text-align: center; padding: 50px 20px; }
-        .login-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        input[type="password"] { width: 80%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
-
-        /* App Content */
-        #app-content { display: none; }
+        :root { --gold: #d4af37; --dark: #1a1a1a; --debit-red: #e74c3c; --credit-green: #27ae60; --navy: #1e3a8a; }
+        body { font-family: -apple-system, sans-serif; background: #f0f2f5; margin: 0; padding: 10px; }
+        .container { background: white; max-width: 600px; margin: auto; border-radius: 12px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); box-sizing: border-box; }
         .header { text-align: center; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 15px; }
-        .logo { max-width: 90px; }
-        #syncStatus { font-size: 10px; text-align: center; color: #888; margin-bottom: 10px; }
-        
         .manager-bar { background: var(--dark); color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-        select, .btn-nav { width: 100%; padding: 12px; border-radius: 6px; border: none; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
-        .btn-nav { background: var(--gold); color: var(--dark); cursor: pointer; }
-
+        select, .btn-nav { width: 100%; padding: 12px; border-radius: 6px; border: none; font-weight: bold; margin-bottom: 8px; font-size: 14px; cursor: pointer; }
+        .btn-nav { background: var(--gold); color: var(--dark); }
         .input-card { padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #ddd; }
         .dr-card { border-left: 8px solid var(--debit-red); background: #fff5f5; }
         .cr-card { border-left: 8px solid var(--credit-green); background: #f5fff5; }
-        .input-row { display: flex; gap: 8px; margin-bottom: 8px; }
-        .input-row div { flex: 1; }
-        label { font-size: 10px; font-weight: bold; color: #666; display: block; margin-bottom: 4px; }
-        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
-
-        .table-wrap { overflow-x: auto; margin-top: 10px; border: 1px solid #eee; border-radius: 8px; }
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; box-sizing: border-box; margin-top: 5px; }
+        .table-wrap { overflow-x: auto; margin: 15px 0; border: 1px solid #eee; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; min-width: 500px; font-size: 13px; }
-        th { background: #f8f9fa; padding: 10px; border: 1px solid #ddd; font-size: 10px; }
+        th { background: #f8f9fa; padding: 10px; border: 1px solid #ddd; font-size: 11px; }
         td { padding: 10px; text-align: center; border: 1px solid #f0f0f0; }
-        .editable:hover { background: #e8f0fe !important; cursor: pointer; }
-        .round-col { background: #fff9e6; font-weight: bold; color: #b45f06; }
-        .btn-del { background: #ff4d4d; color: white; border: none; padding: 5px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; }
-
-        .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
-        .stat-card { background: var(--dark); color: white; padding: 10px; border-radius: 8px; text-align: center; }
-        .stat-card small { font-size: 9px; color: #aaa; text-transform: uppercase; }
-        .stat-card div { font-size: 14px; font-weight: bold; color: var(--gold); margin-top: 4px; }
-        .amount-card { grid-column: span 2; background: var(--gold); color: var(--dark); padding: 15px; }
-        .amount-card div { font-size: 22px; }
-
-        .btn-footer { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; font-size: 14px; margin-top: 10px; }
+        
+        .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .stat-card { background: var(--dark); color: white; padding: 12px; border-radius: 8px; text-align: center; }
+        .stat-card div { font-size: 16px; font-weight: bold; color: var(--gold); margin-top: 5px; }
+        
+        /* NEW HIGH-VISIBILITY SETTLEMENT BOX */
+        .amount-card { grid-column: span 2; background: var(--navy); padding: 20px; border: 2px solid var(--gold); }
+        .amount-card small { color: #cbd5e1; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
+        .amount-card div { color: var(--gold) !important; font-size: 28px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        
+        .btn-footer { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; margin-top: 10px; }
+        #login-screen { text-align: center; padding-top: 50px; }
     </style>
 </head>
 <body>
 
 <div id="login-screen" class="container">
-    <div class="login-box">
-        <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:80px; margin-bottom:15px;">
-        <h2>GOPI JEWELLERS</h2>
-        <p>Security Check</p>
-        <input type="password" id="passInput" placeholder="Enter Password">
-        <button class="btn-footer" style="background:var(--gold); color:var(--dark);" onclick="checkPass()">LOGIN</button>
-    </div>
+    <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:80px;">
+    <h2>Gopi Jewellers</h2>
+    <input type="password" id="passInput" placeholder="Enter Password">
+    <button class="btn-footer" style="background:var(--gold); color:var(--dark);" onclick="checkPass()">Login</button>
 </div>
 
-<div id="app-content" class="container">
+<div id="app-content" class="container" style="display:none;">
     <div class="header">
-        <img src="https://i.postimg.cc/85zKzX68/1000207262.png" alt="Logo" class="logo">
-        <h1>Karigar Cloud System</h1>
-        <div id="syncStatus">☁ Connecting...</div>
+        <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;">
+        <div id="syncStatus" style="font-size:10px; color:#888;">☁ Syncing...</div>
     </div>
 
     <div class="manager-bar">
         <select id="karigarSelector" onchange="switchKarigar()"></select>
-        <div id="profileDisplay" style="color:#d4af37; margin:10px 0; font-size:12px; padding-left:10px; border-left:2px solid var(--gold)"></div>
-        <button class="btn-nav" onclick="showModal()">+ Register Karigar</button>
-        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generateSettlementPDF()">📄 Download PDF Slip</button>
+        <button class="btn-nav" onclick="showModal()">+ New Karigar</button>
     </div>
 
     <div class="input-card dr-card">
-        <div class="input-row">
-            <div><label>Date</label><input type="text" id="drDate" placeholder="11 Feb"></div>
-            <div><label>Saman</label><input type="text" id="drSaman"></div>
-            <div><label>Weight</label><input type="number" id="drWt" step="0.001"></div>
-        </div>
+        <input type="text" id="drDate" placeholder="Date (e.g. 11 Feb)">
+        <input type="text" id="drSaman" placeholder="Saman">
+        <input type="number" id="drWt" step="0.001" placeholder="Weight">
         <button class="btn-footer" style="background:var(--debit-red);" onclick="addEntry('Dr')">ADD ISSUE (DR)</button>
     </div>
 
     <div class="input-card cr-card">
-        <div class="input-row">
-            <div><label>Date</label><input type="text" id="crDate" placeholder="11 Feb"></div>
-            <div><label>Saman</label><input type="text" id="crSaman"></div>
-            <div><label>Weight</label><input type="number" id="crWt" step="0.001"></div>
-        </div>
+        <input type="text" id="crDate" placeholder="Date">
+        <input type="text" id="crSaman" placeholder="Saman">
+        <input type="number" id="crWt" step="0.001" placeholder="Weight">
         <button class="btn-footer" style="background:var(--credit-green);" onclick="addEntry('Cr')">ADD JAMA (CR)</button>
     </div>
 
-    <div style="margin: 10px 0;">
-        <label>Gold Rate (₹)</label>
-        <input type="number" id="rate" oninput="calculate()">
+    <div style="padding:10px; background:#eee; border-radius:8px;">
+        <label style="font-size:12px; font-weight:bold;">Gold Rate (₹)</label>
+        <input type="number" id="rate" oninput="calculate()" placeholder="Enter Current Rate">
     </div>
 
     <div class="table-wrap">
         <table>
-            <thead>
-                <tr><th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th><th colspan="4" style="color:var(--credit-green)">CR - JAMA</th></tr>
-                <tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Wt</th><th class="round-col">Net</th></tr>
-            </thead>
+            <thead><tr><th>Date</th><th>Saman</th><th>Dr Wt</th><th>Date</th><th>Saman</th><th>Cr Wt</th><th>Net</th></tr></thead>
             <tbody id="ledgerBody"></tbody>
         </table>
     </div>
 
     <div class="summary">
-        <div class="stat-card"><small>Total Dr</small><div id="dispDr">0.000</div></div>
-        <div class="stat-card"><small>Actual Cr</small><div id="dispCr">0.000</div></div>
-        <div class="stat-card"><small>Balance</small><div id="dispBal">0.000</div></div>
-        <div class="stat-card"><small>Kam Fine</small><div id="dispNet">0.000</div></div>
-        <div class="stat-card amount-card"><small>Settlement Amount</small><div id="dispRs">₹0</div></div>
-    </div>
-    
-    <button class="btn-footer" style="background:#e74c3c" onclick="deleteKarigar()">Delete Karigar Profile</button>
-</div>
-
-<div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; justify-content:center; align-items:center;">
-    <div style="background:white; padding:20px; border-radius:12px; width:90%; max-width:400px;">
-        <h3>New Karigar</h3>
-        <label>Name</label><input type="text" id="newName">
-        <label>Address</label><input type="text" id="newAddress">
-        <label>Phone</label><input type="text" id="newPhone">
-        <button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">Register</button>
-        <button class="btn-footer" style="background:#999;" onclick="hideModal()">Cancel</button>
+        <div class="stat-card">Total Dr<div id="dispDr">0.000</div></div>
+        <div class="stat-card">Actual Cr<div id="dispCr">0.000</div></div>
+        <div class="stat-card">Balance<div id="dispBal">0.000</div></div>
+        <div class="stat-card">Kam Fine<div id="dispNet">0.000</div></div>
+        <div class="stat-card amount-card">
+            <small>Settlement Amount</small>
+            <div id="dispRs">₹0</div>
+        </div>
     </div>
 </div>
 
 <script>
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx0G79ae_2xJR8kBKE2CxjL_62qOUv0_BqzzmTN5YhopZ61XTg0F499a8QvQ3cTpGjcXw/exec";
-    const SHOP_PASS = "1234"; 
+    const SHOP_PASS = "1234";
     let masterData = {};
     let currentId = "";
 
@@ -151,7 +108,6 @@
     }
 
     async function loadFromServer() {
-        document.getElementById('syncStatus').innerText = "☁ Syncing Cloud...";
         try {
             const response = await fetch(CLOUD_URL);
             const text = await response.text();
@@ -170,25 +126,61 @@
         document.getElementById('syncStatus').innerText = "⏳ Saving...";
         try {
             await fetch(CLOUD_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(masterData) });
-            document.getElementById('syncStatus').innerText = "✅ Cloud Saved";
+            document.getElementById('syncStatus').innerText = "✅ Saved to Cloud";
         } catch (err) { document.getElementById('syncStatus').innerText = "❌ Sync Error"; }
     }
 
-    function saveData() {
+    function addEntry(type) {
+        const wt = parseFloat(document.getElementById(type.toLowerCase() + 'Wt').value);
+        if (isNaN(wt)) return alert("Enter Weight");
+        let k = masterData[currentId];
+        let entry = { 
+            date: document.getElementById(type.toLowerCase() + 'Date').value, 
+            saman: document.getElementById(type.toLowerCase() + 'Saman').value, 
+            wt: wt 
+        };
+        if (type === 'Cr') {
+            let d = parseFloat((wt - Math.floor(wt)).toFixed(2));
+            entry.rounded = (d < 0.35) ? Math.floor(wt) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(wt) + 1);
+        }
+        k[type.toLowerCase()].push(entry);
         localStorage.setItem('gopi_master_cloud', JSON.stringify(masterData));
-        localStorage.setItem('gopi_active_id', currentId);
         syncToServer();
+        renderTable();
     }
 
-    function showModal() { document.getElementById('modal').style.display = 'flex'; }
-    function hideModal() { document.getElementById('modal').style.display = 'none'; }
+    function calculate() {
+        let k = masterData[currentId];
+        if(!k) return;
+        let rate = parseFloat(document.getElementById('rate').value) || 0;
+        k.rate = rate;
+        const totalDr = k.dr.reduce((s, i) => s + i.wt, 0);
+        const totalCrAct = k.cr.reduce((s, i) => s + i.wt, 0);
+        const totalCrRound = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
+        const netBal = totalDr - totalCrAct;
+        const fine = ((totalCrRound * 0.05) - netBal) * 0.91;
+        
+        document.getElementById('dispDr').innerText = totalDr.toFixed(3);
+        document.getElementById('dispCr').innerText = totalCrAct.toFixed(3);
+        document.getElementById('dispBal').innerText = netBal.toFixed(3);
+        document.getElementById('dispNet').innerText = fine.toFixed(5);
+        document.getElementById('dispRs').innerText = "₹" + Math.abs(Math.round(fine * rate)).toLocaleString('en-IN');
+    }
 
-    function registerKarigar() {
-        const name = document.getElementById('newName').value;
-        if (!name) return;
-        const id = "K_" + Date.now();
-        masterData[id] = { name, address: document.getElementById('newAddress').value, phone: document.getElementById('newPhone').value, dr: [], cr: [], rate: 0 };
-        currentId = id; saveData(); hideModal(); refreshUI();
+    function renderTable() {
+        const body = document.getElementById('ledgerBody');
+        body.innerHTML = '';
+        let k = masterData[currentId];
+        const rows = Math.max(k.dr.length, k.cr.length);
+        for (let i = 0; i < rows; i++) {
+            const dr = k.dr[i]; const cr = k.cr[i];
+            body.innerHTML += `<tr>
+                <td>${dr ? dr.date : '-'}</td><td>${dr ? dr.saman : '-'}</td><td>${dr ? dr.wt.toFixed(3) : '-'}</td>
+                <td>${cr ? cr.date : '-'}</td><td>${cr ? cr.saman : '-'}</td><td>${cr ? cr.wt.toFixed(3) : '-'}</td>
+                <td style="font-weight:bold">${cr ? cr.rounded.toFixed(1) : '-'}</td>
+            </tr>`;
+        }
+        calculate();
     }
 
     function refreshUI() {
@@ -200,122 +192,8 @@
             if(id === currentId) opt.selected = true;
             selector.appendChild(opt);
         });
-        if (currentId && masterData[currentId]) {
-            const k = masterData[currentId];
-            document.getElementById('profileDisplay').innerHTML = `<b>${k.name}</b> | ${k.phone}<br>${k.address}`;
-            document.getElementById('rate').value = k.rate || '';
-            renderTable();
-        }
+        renderTable();
     }
-
-    function switchKarigar() { currentId = document.getElementById('karigarSelector').value; refreshUI(); }
-
-    function addEntry(type) {
-        const date = document.getElementById(type.toLowerCase() + 'Date').value;
-        const saman = document.getElementById(type.toLowerCase() + 'Saman').value;
-        const wt = parseFloat(document.getElementById(type.toLowerCase() + 'Wt').value);
-        if (!date || isNaN(wt)) return;
-        let k = masterData[currentId];
-        if (type === 'Dr') k.dr.push({ date, saman, wt });
-        else {
-            let d = parseFloat((wt - Math.floor(wt)).toFixed(2));
-            let rounded = (d < 0.35) ? Math.floor(wt) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(wt) + 1);
-            k.cr.push({ date, saman, wt, rounded });
-        }
-        saveData(); renderTable();
-        document.getElementById(type.toLowerCase() + 'Saman').value = '';
-        document.getElementById(type.toLowerCase() + 'Wt').value = '';
-    }
-
-    function editCell(type, index, field) {
-        let k = masterData[currentId];
-        let arr = (type === 'Dr') ? k.dr : k.cr;
-        let newVal = prompt(`Edit ${field}:`, arr[index][field]);
-        if (newVal !== null) {
-            arr[index][field] = (field === 'wt' || field === 'rounded') ? parseFloat(newVal) : newVal;
-            saveData(); renderTable();
-        }
-    }
-
-    function deleteRow(type, index) {
-        if(confirm("Delete Row?")) {
-            (type === 'Dr' ? masterData[currentId].dr : masterData[currentId].cr).splice(index, 1);
-            saveData(); renderTable();
-        }
-    }
-
-    function renderTable() {
-        const body = document.getElementById('ledgerBody');
-        body.innerHTML = '';
-        let k = masterData[currentId];
-        const rows = Math.max(k.dr.length, k.cr.length);
-        for (let i = 0; i < rows; i++) {
-            const dr = k.dr[i]; const cr = k.cr[i];
-            body.innerHTML += `<tr>
-                <td class="editable" onclick="editCell('Dr', ${i}, 'date')">${dr ? dr.date : '-'}</td>
-                <td class="editable" onclick="editCell('Dr', ${i}, 'saman')">${dr ? dr.saman : '-'}</td>
-                <td>${dr ? dr.wt.toFixed(3) : ''} ${dr ? `<button class="btn-del" onclick="deleteRow('Dr', ${i})">x</button>` : ''}</td>
-                <td class="editable" onclick="editCell('Cr', ${i}, 'date')">${cr ? cr.date : '-'}</td>
-                <td class="editable" onclick="editCell('Cr', ${i}, 'saman')">${cr ? cr.saman : '-'}</td>
-                <td class="editable" onclick="editCell('Cr', ${i}, 'wt')">${cr ? cr.wt.toFixed(3) : ''}</td>
-                <td class="round-col editable" onclick="editCell('Cr', ${i}, 'rounded')">${cr ? cr.rounded.toFixed(1) : ''}</td>
-            </tr>`;
-        }
-        calculate();
-    }
-
-    function calculate() {
-        let k = masterData[currentId]; k.rate = parseFloat(document.getElementById('rate').value) || 0;
-        const totalDr = k.dr.reduce((s, i) => s + i.wt, 0);
-        const totalCrAct = k.cr.reduce((s, i) => s + i.wt, 0);
-        const totalCrRound = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
-        const netBal = totalDr - totalCrAct;
-        const fine = ((totalCrRound * 0.05) - netBal) * 0.91;
-        document.getElementById('dispDr').innerText = totalDr.toFixed(3);
-        document.getElementById('dispCr').innerText = totalCrAct.toFixed(3);
-        document.getElementById('dispBal').innerText = netBal.toFixed(3);
-        document.getElementById('dispNet').innerText = fine.toFixed(5);
-        document.getElementById('dispRs').innerText = "₹" + Math.max(0, fine * k.rate).toLocaleString('en-IN', {maximumFractionDigits: 0});
-    }
-
-    function generateSettlementPDF() {
-        const k = masterData[currentId];
-        let pdfHTML = `<div style="padding:20px; font-family:sans-serif;">
-            <div style="text-align:center; border-bottom:2px solid #d4af37; padding-bottom:10px;">
-                <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;">
-                <h3>GOPI JEWELLERS</h3>
-                <p>Settlement Statement</p>
-            </div>
-            <p><strong>Karigar:</strong> ${k.name} | <strong>Phone:</strong> ${k.phone}</p>
-            <table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:11px;">
-                <thead><tr style="background:#eee;"><th>Date</th><th>Saman</th><th>Dr (Issue)</th><th>Cr (Jama)</th><th>Net Kaam</th></tr></thead>
-                <tbody>`;
-        const rows = Math.max(k.dr.length, k.cr.length);
-        for (let i = 0; i < rows; i++) {
-            const dr = k.dr[i]; const cr = k.cr[i];
-            pdfHTML += `<tr>
-                <td style="border:1px solid #ddd; padding:5px; text-align:center;">${dr ? dr.date : (cr ? cr.date : '-')}</td>
-                <td style="border:1px solid #ddd; padding:5px; text-align:center;">${dr ? dr.saman : (cr ? cr.saman : '-')}</td>
-                <td style="border:1px solid #ddd; padding:5px; text-align:center;">${dr ? dr.wt.toFixed(3) : '-'}</td>
-                <td style="border:1px solid #ddd; padding:5px; text-align:center;">${cr ? cr.wt.toFixed(3) : '-'}</td>
-                <td style="border:1px solid #ddd; padding:5px; text-align:center; font-weight:bold;">${cr ? cr.rounded.toFixed(1) : '-'}</td>
-            </tr>`;
-        }
-        const totalDr = k.dr.reduce((s, i) => s + i.wt, 0);
-        const totalCrAct = k.cr.reduce((s, i) => s + i.wt, 0);
-        const totalCrRound = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
-        const netBal = totalDr - totalCrAct;
-        const fine = ((totalCrRound * 0.05) - netBal) * 0.91;
-        pdfHTML += `</tbody></table>
-            <div style="background:#1a1a1a; color:white; padding:15px; margin-top:15px; border-radius:8px;">
-                <p>Net Balance: ${netBal.toFixed(3)} | Fine: ${fine.toFixed(5)}</p>
-                <h3 style="color:#d4af37; margin:0;">Total Amount: ₹${Math.max(0, fine * k.rate).toLocaleString('en-IN')}</h3>
-            </div>
-        </div>`;
-        html2pdf().set({ margin: 10, filename: `Gopi_${k.name}.pdf`, html2canvas: { scale: 3 } }).from(pdfHTML).save();
-    }
-
-    function deleteKarigar() { if(confirm("Delete Profile?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); } }
 </script>
 </body>
 </html>
