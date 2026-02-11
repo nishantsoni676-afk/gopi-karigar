@@ -18,16 +18,20 @@
         .cr-card { border-left: 8px solid var(--credit-green); background: #f5fff5; }
         input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; box-sizing: border-box; margin-top: 5px; }
         .table-wrap { overflow-x: auto; margin: 15px 0; border: 1px solid #eee; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; min-width: 550px; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; font-size: 12px; }
         th { background: #f8f9fa; padding: 10px; border: 1px solid #ddd; font-size: 11px; }
-        td { padding: 10px; text-align: center; border: 1px solid #f0f0f0; }
+        td { padding: 8px; text-align: center; border: 1px solid #f0f0f0; }
         .editable:hover { background: #e8f0fe; cursor: pointer; }
-        .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 2px 6px; border-radius: 4px; font-size: 10px; cursor: pointer; }
+        .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold; }
+        
         .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .stat-card { background: var(--dark); color: white; padding: 12px; border-radius: 8px; text-align: center; }
         .stat-card div { font-size: 16px; font-weight: bold; color: var(--gold); margin-top: 5px; }
+        .highlight-net { background: #2c3e50; border: 1px solid var(--gold); }
+        
         .amount-card { grid-column: span 2; background: var(--navy); padding: 20px; border: 2px solid var(--gold); }
         .amount-card div { color: var(--gold) !important; font-size: 28px; font-weight: bold; }
+        
         .btn-footer { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; margin-top: 10px; }
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
         #login-screen { text-align: center; padding-top: 50px; }
@@ -79,14 +83,24 @@
 
     <div class="table-wrap">
         <table>
-            <thead><tr><th>Date</th><th>Saman</th><th>Dr Wt</th><th>Date</th><th>Saman</th><th>Cr Wt</th><th>Net</th></tr></thead>
+            <thead>
+                <tr>
+                    <th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th>
+                    <th colspan="4" style="color:var(--credit-green)">CR - JAMA</th>
+                </tr>
+                <tr>
+                    <th>Date</th><th>Saman</th><th>Wt</th>
+                    <th>Date</th><th>Saman</th><th>Total Cr</th><th>Net</th>
+                </tr>
+            </thead>
             <tbody id="ledgerBody"></tbody>
         </table>
     </div>
 
     <div class="summary">
         <div class="stat-card">Total Dr<div id="dispDr">0.000</div></div>
-        <div class="stat-card">Actual Cr<div id="dispCr">0.000</div></div>
+        <div class="stat-card">Total Cr<div id="dispCr">0.000</div></div>
+        <div class="stat-card highlight-net">Total Net<div id="dispTotalNet">0.0</div></div>
         <div class="stat-card">Balance<div id="dispBal">0.000</div></div>
         <div class="stat-card">Kam Fine<div id="dispNet">0.000</div></div>
         <div class="stat-card amount-card">
@@ -204,13 +218,14 @@
         let rate = parseFloat(document.getElementById('rate').value) || 0;
         k.rate = rate;
         const totalDr = k.dr.reduce((s, i) => s + i.wt, 0);
-        const totalCrAct = k.cr.reduce((s, i) => s + i.wt, 0);
-        const totalCrRound = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
-        const netBal = totalDr - totalCrAct;
-        const fine = ((totalCrRound * 0.05) - netBal) * 0.91;
+        const totalCr = k.cr.reduce((s, i) => s + i.wt, 0);
+        const totalNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
+        const netBal = totalDr - totalCr;
+        const fine = ((totalNet * 0.05) - netBal) * 0.91;
         
         document.getElementById('dispDr').innerText = totalDr.toFixed(3);
-        document.getElementById('dispCr').innerText = totalCrAct.toFixed(3);
+        document.getElementById('dispCr').innerText = totalCr.toFixed(3);
+        document.getElementById('dispTotalNet').innerText = totalNet.toFixed(1);
         document.getElementById('dispBal').innerText = netBal.toFixed(3);
         document.getElementById('dispNet').innerText = fine.toFixed(5);
         document.getElementById('dispRs').innerText = "₹" + Math.abs(Math.round(fine * rate)).toLocaleString('en-IN');
@@ -227,10 +242,10 @@
             body.innerHTML += `<tr>
                 <td class="editable" onclick="editCell('Dr', ${i}, 'date')">${dr ? dr.date : '-'}</td>
                 <td class="editable" onclick="editCell('Dr', ${i}, 'saman')">${dr ? dr.saman : '-'}</td>
-                <td>${dr ? dr.wt.toFixed(3) : '-'} ${dr ? `<button class="btn-del-row" onclick="deleteRow('Dr', ${i})">x</button>` : ''}</td>
+                <td style="background:#fffafa;">${dr ? dr.wt.toFixed(3) : '-'} ${dr ? `<button class="btn-del-row" onclick="deleteRow('Dr', ${i})">x</button>` : ''}</td>
                 <td class="editable" onclick="editCell('Cr', ${i}, 'date')">${cr ? cr.date : '-'}</td>
                 <td class="editable" onclick="editCell('Cr', ${i}, 'saman')">${cr ? cr.saman : '-'}</td>
-                <td class="editable" onclick="editCell('Cr', ${i}, 'wt')">${cr ? cr.wt.toFixed(3) : '-'}</td>
+                <td class="editable" onclick="editCell('Cr', ${i}, 'wt')" style="background:#fafffa;">${cr ? cr.wt.toFixed(3) : '-'} ${cr ? `<button class="btn-del-row" onclick="deleteRow('Cr', ${i})">x</button>` : ''}</td>
                 <td class="editable" onclick="editCell('Cr', ${i}, 'rounded')" style="font-weight:bold">${cr ? cr.rounded.toFixed(1) : '-'}</td>
             </tr>`;
         }
@@ -239,42 +254,4 @@
 
     function refreshUI() {
         const selector = document.getElementById('karigarSelector');
-        selector.innerHTML = '';
-        Object.keys(masterData).forEach(id => {
-            let opt = document.createElement('option');
-            opt.value = id; opt.innerHTML = masterData[id].name;
-            if(id === currentId) opt.selected = true;
-            selector.appendChild(opt);
-        });
-        renderTable();
-    }
-
-    function switchKarigar() { currentId = document.getElementById('karigarSelector').value; localStorage.setItem('gopi_active_id', currentId); refreshUI(); }
-
-    function deleteKarigar() { if(confirm("Permanently delete this Karigar?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); } }
-
-    function generatePDF() {
-        const k = masterData[currentId];
-        let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">
-            <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;">
-            <h2>GOPI JEWELLERS</h2>
-            <p>Karigar: ${k.name} | Rate: ₹${k.rate}</p>
-            <table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;">
-                <tr style="background:#eee;"><th>Date</th><th>Dr Wt</th><th>Cr Wt</th><th>Net</th></tr>`;
-        const rows = Math.max(k.dr.length, k.cr.length);
-        for (let i = 0; i < rows; i++) {
-            pdfHTML += `<tr>
-                <td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date || k.cr[i]?.date || '-'}</td>
-                <td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3) || '-'}</td>
-                <td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3) || '-'}</td>
-                <td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1) || '-'}</td>
-            </tr>`;
-        }
-        pdfHTML += `</table><div style="background:#1e3a8a; color:#d4af37; padding:15px; margin-top:20px; border-radius:10px;">
-            <h3>Total Settlement: ${document.getElementById('dispRs').innerText}</h3>
-        </div></div>`;
-        html2pdf().from(pdfHTML).save(`${k.name}_Gopi_Jewellers.pdf`);
-    }
-</script>
-</body>
-</html>
+        selector.innerHTML
