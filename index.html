@@ -6,140 +6,136 @@
     <title>Gopi Jewellers ERP</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        :root { --gold: #d4af37; --dark: #1a1a1a; --navy: #1e3a8a; }
-        
+        :root { --gold: #d4af37; --dark: #1a1a1a; --debit-red: #e74c3c; --credit-green: #27ae60; --navy: #1e3a8a; }
         html, body { height: 100%; margin: 0; padding: 0; background: #f0f2f5; font-family: -apple-system, sans-serif; }
-        
-        /* Main Navigation Wrapper */
         .container { background: white; width: 100%; min-height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; }
         
-        /* Header Styling */
-        .header { text-align: center; border-bottom: 3px solid var(--gold); padding: 10px; background: white; }
-        
-        /* Dashboard / Menu Styling */
-        .menu-grid { 
-            display: grid; 
-            grid-template-columns: 1fr; 
-            gap: 20px; 
-            padding: 25px; 
-            flex-grow: 1; 
-            align-content: center;
-        }
+        /* MENU PAGE STYLING */
+        .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 25px; flex-grow: 1; align-content: center; }
+        .menu-card { background: var(--dark); color: white; padding: 40px 20px; border-radius: 15px; text-align: center; border: 3px solid var(--gold); cursor: pointer; }
+        .menu-card h2 { margin: 10px 0 0; font-size: 24px; text-transform: uppercase; }
 
-        .menu-card {
-            background: var(--dark);
-            color: white;
-            padding: 40px 20px;
-            border-radius: 15px;
-            text-align: center;
-            text-decoration: none;
-            border: 3px solid var(--gold);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .menu-card:active { transform: scale(0.95); }
-        .menu-card h2 { margin: 10px 0 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
-        .menu-card i { font-size: 40px; color: var(--gold); }
-
-        /* Page Management */
-        .page { display: none; padding: 10px; flex-direction: column; }
+        /* LEDGER PAGE STYLING (RESTORED) */
+        .page { display: none; flex-direction: column; padding: 10px; box-sizing: border-box; min-height: 100vh; }
         .page.active { display: flex; }
+        .header { text-align: center; border-bottom: 3px solid var(--gold); padding-bottom: 8px; margin-bottom: 12px; }
+        
+        select, .btn-nav { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: 900; margin-bottom: 8px; font-size: 18px; cursor: pointer; }
+        .btn-nav { background: var(--gold); color: var(--dark); text-transform: uppercase; }
+        
+        .input-card { padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 2px solid #ddd; }
+        .dr-card { border-left: 10px solid var(--debit-red); background: #fffafa; }
+        .cr-card { border-left: 10px solid var(--credit-green); background: #fafffa; }
+        
+        input { width: 100%; padding: 15px; border: 2px solid #ccc; border-radius: 6px; font-size: 18px; font-weight: bold; box-sizing: border-box; margin-top: 5px; }
+        
+        .table-wrap { flex-grow: 1; min-height: 450px; overflow: auto; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; min-width: 650px; font-size: 16px; font-weight: bold; }
+        th { position: sticky; top: 0; background: #eee; z-index: 10; border-bottom: 3px solid #ddd; padding: 12px; font-size: 14px; }
+        td { padding: 12px; text-align: center; border: 1px solid #ddd; }
+        
+        .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 16px; font-weight: bold; }
 
-        /* Shared Buttons */
-        .btn-back { background: var(--navy); color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; margin-bottom: 10px; cursor: pointer; }
-        .btn-action { width: 100%; padding: 15px; border-radius: 8px; border: none; background: var(--gold); color: var(--dark); font-weight: 900; font-size: 16px; margin-top: 10px; cursor: pointer; }
+        .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
+        .stat-card { background: var(--dark); color: white; padding: 15px; border-radius: 8px; text-align: center; }
+        .stat-card div { font-size: 22px; font-weight: 900; color: var(--gold); }
+        .full-width-card { grid-column: span 2; padding: 18px; border: 2px solid var(--gold); }
+        .fine-card { background: #2c3e50; }
+        .amount-card { background: var(--navy); border: 3px solid var(--gold); }
+        .amount-card div { font-size: 36px; }
 
-        /* Standard Ledger Styles (From your previous working version) */
-        .input-card { padding: 10px; border-radius: 10px; margin-bottom: 10px; border: 2px solid #ddd; }
-        .table-wrap { flex-grow: 1; min-height: 350px; overflow: auto; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; font-size: 13px; }
-        th { background: #eee; padding: 10px; position: sticky; top: 0; }
-        td { padding: 10px; text-align: center; border: 1px solid #eee; }
-
-        /* Summary Boxes */
-        .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .stat { background: var(--dark); color: white; padding: 12px; border-radius: 8px; text-align: center; }
-        .stat div { color: var(--gold); font-size: 18px; font-weight: bold; }
-
-        #login-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
+        .btn-footer { width: 100%; padding: 20px; border: none; border-radius: 10px; font-weight: 900; color: white; margin-top: 10px; font-size: 20px; cursor: pointer; }
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    
-    <div id="login-page" class="page active" style="justify-content: center; align-items: center; text-align: center;">
-        <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:100px; margin-bottom: 20px;">
+    <div id="login-screen" class="page active" style="justify-content: center; align-items: center; text-align: center;">
+        <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:120px; margin-bottom: 20px;">
         <h1>Gopi Jewellers</h1>
-        <input type="password" id="passInput" placeholder="Password" style="width: 80%; padding: 15px; border-radius: 8px; border: 2px solid #ccc; text-align: center;">
-        <button class="btn-action" style="width: 80%;" onclick="checkPass()">Login</button>
+        <input type="password" id="passInput" placeholder="Password" style="text-align:center; width: 80%;">
+        <button class="btn-footer" style="background:var(--gold); color:var(--dark); width: 80%;" onclick="checkPass()">LOGIN</button>
     </div>
 
     <div id="main-menu" class="page">
-        <div class="header">
-            <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;">
-            <h2>Control Panel</h2>
-        </div>
+        <div class="header"><h2>Control Panel</h2></div>
         <div class="menu-grid">
             <div class="menu-card" onclick="openModule('jobwork-page')">
-                <span style="font-size: 40px;">⚖️</span>
+                <span style="font-size: 50px;">⚖️</span>
                 <h2>Karigar Jobwork</h2>
-                <small>(Gold Ledger)</small>
             </div>
             <div class="menu-card" onclick="openModule('cash-page')">
-                <span style="font-size: 40px;">💸</span>
+                <span style="font-size: 50px;">💸</span>
                 <h2>Karigar Cash</h2>
-                <small>(Coming Soon)</small>
             </div>
         </div>
     </div>
 
     <div id="jobwork-page" class="page">
-        <button class="btn-back" onclick="openModule('main-menu')">← Back to Menu</button>
-        <div class="header"><h3>Karigar Jobwork</h3></div>
+        <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
+        <div class="header"><img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;"><div id="syncStatus" style="font-size:12px; color:#888; font-weight:900;">☁ CONNECTED</div></div>
         
-        <select id="karigarSelector" style="width:100%; padding:15px; margin:10px 0;" onchange="switchKarigar()"></select>
-        
-        <div class="input-card" style="border-left: 8px solid #e74c3c;">
-            <div style="display:flex; gap:5px;"><input type="text" id="drDate" placeholder="Date"><input type="text" id="drSaman" placeholder="Saman"><input type="number" id="drWt" placeholder="Wt"></div>
-            <button class="btn-action" style="background:#e74c3c; color:white;" onclick="addEntry('Dr')">Issue Gold (DR)</button>
+        <select id="karigarSelector" onchange="switchKarigar()"></select>
+        <button class="btn-nav" onclick="showModal()">+ NEW REGISTRATION</button>
+        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generatePDF()">📄 DOWNLOAD PDF SLIP</button>
+
+        <div class="input-card dr-card">
+            <div style="display:flex; gap:5px;"><input type="text" id="drDate" placeholder="Date"><input type="text" id="drSaman" placeholder="Saman"><input type="number" id="drWt" step="0.001" placeholder="Wt"></div>
+            <button class="btn-footer" style="background:var(--debit-red);" onclick="addEntry('Dr')">ADD ISSUE (DR)</button>
         </div>
 
-        <div class="input-card" style="border-left: 8px solid #27ae60;">
-            <div style="display:flex; gap:5px;"><input type="text" id="crDate" placeholder="Date"><input type="text" id="crSaman" placeholder="Saman"><input type="number" id="crWt" placeholder="Wt"></div>
-            <button class="btn-action" style="background:#27ae60; color:white;" onclick="addEntry('Cr')">Jama Gold (CR)</button>
+        <div class="input-card cr-card">
+            <div style="display:flex; gap:5px;"><input type="text" id="crDate" placeholder="Date"><input type="text" id="crSaman" placeholder="Saman"><input type="number" id="crWt" step="0.001" placeholder="Wt"></div>
+            <button class="btn-footer" style="background:var(--credit-green);" onclick="addEntry('Cr')">ADD JAMA (CR)</button>
+        </div>
+
+        <div style="padding:15px; background:#eee; border-radius:10px; display: flex; align-items: center; justify-content: space-between;">
+            <label style="font-size:18px; font-weight:900;">GOLD RATE:</label>
+            <input type="number" id="rate" oninput="calculate()" placeholder="₹ Rate" style="width: 60%; margin-top: 0;">
         </div>
 
         <div class="table-wrap">
             <table>
-                <thead><tr><th colspan="3">DR ISSUE</th><th colspan="4">CR JAMA</th></tr><tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Total</th><th>Net</th></tr></thead>
+                <thead>
+                    <tr><th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th><th colspan="4" style="color:var(--credit-green)">CR - JAMA</th></tr>
+                    <tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Total Cr</th><th>Net</th></tr>
+                </thead>
                 <tbody id="ledgerBody"></tbody>
             </table>
         </div>
 
         <div class="summary">
-            <div class="stat"><small>TOTAL DR</small><div id="dispDr">0.000</div></div>
-            <div class="stat"><small>TOTAL CR</small><div id="dispCr">0.000</div></div>
-            <div class="stat" style="grid-column: span 2; background: var(--navy);"><small>SETTLEMENT</small><div id="dispRs">₹0</div></div>
+            <div class="stat-card"><small>TOTAL DR</small><div id="dispDr">0.000</div></div>
+            <div class="stat-card"><small>TOTAL CR</small><div id="dispCr">0.000</div></div>
+            <div class="stat-card"><small>TOTAL NET</small><div id="dispTotalNet">0.0</div></div>
+            <div class="stat-card"><small>BALANCE</small><div id="dispBal">0.000</div></div>
+            <div class="stat-card full-width-card fine-card"><small>KAM FINE (91.60)</small><div id="dispNet">0.00000</div></div>
+            <div class="stat-card full-width-card amount-card"><small>SETTLEMENT AMOUNT</small><div id="dispRs">₹0</div></div>
         </div>
+        <button class="btn-footer" style="background:#e74c3c; margin-bottom:30px;" onclick="deleteKarigar()">DELETE PROFILE</button>
     </div>
 
     <div id="cash-page" class="page">
-        <button class="btn-back" onclick="openModule('main-menu')">← Back to Menu</button>
-        <div style="text-align:center; margin-top:50px;">
-            <span style="font-size: 60px;">💸</span>
-            <h2>Cash Section</h2>
-            <p>This module is currently under development.</p>
-        </div>
+        <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
+        <div style="text-align:center; padding-top: 50px;"><h2>Karigar Cash Section</h2><p>Coming Soon...</p></div>
     </div>
+</div>
 
+<div id="modal">
+    <div style="background:white; padding:25px; border-radius:12px; width:95%; max-width:400px; text-align:center;">
+        <h2>Register Karigar</h2>
+        <input type="text" id="newName" placeholder="Karigar Name">
+        <button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">SAVE</button>
+        <button class="btn-footer" style="background:#999;" onclick="hideModal()">CANCEL</button>
+    </div>
 </div>
 
 <script>
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx0G79ae_2xJR8kBKE2CxjL_62qOUv0_BqzzmTN5YhopZ61XTg0F499a8QvQ3cTpGjcXw/exec";
     const SHOP_PASS = "1234";
     let masterData = {};
+    let currentId = "";
 
     function checkPass() {
         if(document.getElementById('passInput').value === SHOP_PASS) {
@@ -153,18 +149,111 @@
         document.getElementById(id).classList.add('active');
     }
 
-    // Logic for Gold Ledger stays active
     async function loadFromServer() {
         try {
             const response = await fetch(CLOUD_URL);
             const text = await response.text();
             masterData = text.trim() ? JSON.parse(text) : {};
+            currentId = localStorage.getItem('gopi_active_id') || Object.keys(masterData)[0] || "";
             refreshUI();
-        } catch (err) { console.log("Offline or sync error"); }
+        } catch (err) { masterData = JSON.parse(localStorage.getItem('gopi_master_cloud')) || {}; refreshUI(); }
     }
 
-    // ... (rest of your entry and calculation functions go here to maintain ledger functionality)
-    // Note: I've kept the UI structure clean so you can navigate between Jobwork and the Menu easily.
+    function saveData() {
+        localStorage.setItem('gopi_master_cloud', JSON.stringify(masterData));
+        localStorage.setItem('gopi_active_id', currentId);
+        fetch(CLOUD_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(masterData) });
+    }
+
+    function showModal() { document.getElementById('modal').style.display = 'flex'; }
+    function hideModal() { document.getElementById('modal').style.display = 'none'; }
+
+    function registerKarigar() {
+        const name = document.getElementById('newName').value;
+        if (!name) return alert("Enter Name");
+        const id = "K_" + Date.now();
+        masterData[id] = { name, dr: [], cr: [] };
+        currentId = id; saveData(); hideModal(); refreshUI();
+    }
+
+    function addEntry(type) {
+        if(!currentId) return;
+        const wt = parseFloat(document.getElementById(type.toLowerCase() + 'Wt').value);
+        if (isNaN(wt)) return;
+        let entry = { 
+            date: document.getElementById(type.toLowerCase() + 'Date').value, 
+            saman: document.getElementById(type.toLowerCase() + 'Saman').value, 
+            wt: wt 
+        };
+        if (type === 'Cr') {
+            if (wt < 1) { entry.rounded = 0; }
+            else {
+                let d = parseFloat((wt - Math.floor(wt)).toFixed(2));
+                entry.rounded = (d < 0.35) ? Math.floor(wt) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(wt) + 1);
+            }
+        }
+        masterData[currentId][type.toLowerCase()].push(entry);
+        saveData(); renderTable();
+    }
+
+    function calculate() {
+        let k = masterData[currentId]; if(!k) return;
+        let rate = parseFloat(document.getElementById('rate').value) || 0;
+        const totalDr = k.dr.reduce((s, i) => s + i.wt, 0);
+        const totalCr = k.cr.reduce((s, i) => s + i.wt, 0);
+        const totalNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
+        const netBal = totalDr - totalCr;
+        const fine = ((totalNet * 0.05) - netBal) * 0.916;
+        document.getElementById('dispDr').innerText = totalDr.toFixed(3);
+        document.getElementById('dispCr').innerText = totalCr.toFixed(3);
+        document.getElementById('dispTotalNet').innerText = totalNet.toFixed(1);
+        document.getElementById('dispBal').innerText = netBal.toFixed(3);
+        document.getElementById('dispNet').innerText = fine.toFixed(5);
+        document.getElementById('dispRs').innerText = "₹" + Math.abs(Math.round(fine * rate)).toLocaleString('en-IN');
+    }
+
+    function renderTable() {
+        const body = document.getElementById('ledgerBody'); body.innerHTML = '';
+        let k = masterData[currentId]; if(!k) return;
+        const rows = Math.max(k.dr.length, k.cr.length);
+        for (let i = 0; i < rows; i++) {
+            const dr = k.dr[i]; const cr = k.cr[i];
+            body.innerHTML += `<tr>
+                <td>${dr ? dr.date : '-'}</td><td>${dr ? dr.saman : '-'}</td>
+                <td style="background:#fffafa;">${dr ? dr.wt.toFixed(3) : '-'} ${dr ? `<button class="btn-del-row" onclick="deleteRow('Dr', ${i})">x</button>` : ''}</td>
+                <td>${cr ? cr.date : '-'}</td><td>${cr ? cr.saman : '-'}</td>
+                <td style="background:#fafffa;">${cr ? cr.wt.toFixed(3) : '-'} ${cr ? `<button class="btn-del-row" onclick="deleteRow('Cr', ${i})">x</button>` : ''}</td>
+                <td style="font-weight:900">${cr ? cr.rounded.toFixed(1) : '-'}</td>
+            </tr>`;
+        }
+        calculate();
+    }
+
+    function refreshUI() {
+        const selector = document.getElementById('karigarSelector'); selector.innerHTML = '';
+        Object.keys(masterData).forEach(id => {
+            let opt = document.createElement('option');
+            opt.value = id; opt.innerHTML = masterData[id].name;
+            if(id === currentId) opt.selected = true;
+            selector.appendChild(opt);
+        });
+        renderTable();
+    }
+
+    function switchKarigar() { currentId = document.getElementById('karigarSelector').value; refreshUI(); }
+    function deleteRow(type, index) { if(confirm("Delete?")) { (type === 'Dr' ? masterData[currentId].dr : masterData[currentId].cr).splice(index, 1); saveData(); renderTable(); } }
+    function deleteKarigar() { if(confirm("Delete Profile?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); } }
+
+    function generatePDF() {
+        const k = masterData[currentId]; if(!k) return;
+        let pdfHTML = `<div style="padding:20px; text-align:center;"><h2>GOPI JEWELLERS</h2><p>Karigar: ${k.name}</p><table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;"><thead><tr style="background:#eee;"><th>Dr Date</th><th>Dr Wt</th><th>Cr Date</th><th>Cr Wt</th><th>Net</th></tr></thead><tbody>`;
+        const rows = Math.max(k.dr.length, k.cr.length);
+        for (let i = 0; i < rows; i++) {
+            pdfHTML += `<tr><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1) || '-'}</td></tr>`;
+        }
+        pdfHTML += `</tbody></table><h3>Total: ${document.getElementById('dispRs').innerText}</h3></div>`;
+        html2pdf().from(pdfHTML).set({ margin: 5, filename: `${k.name}_Slip.pdf`, html2canvas: { scale: 2 } }).save();
+    }
 </script>
 </body>
 </html>
