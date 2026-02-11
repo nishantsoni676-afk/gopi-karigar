@@ -78,7 +78,7 @@
         
         <select id="karigarSelector" onchange="switchKarigar()"></select>
         <button class="btn-nav" onclick="showModal()">+ NEW REGISTRATION</button>
-        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generatePDF()">📄 DOWNLOAD PDF SLIP</button>
+        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generatePDF()">📄 DOWNLOAD GOLD SLIP</button>
 
         <div class="input-card dr-card">
             <div style="display:flex; gap:5px;"><input type="text" id="drDate" placeholder="Date"><input type="text" id="drSaman" placeholder="Saman"><input type="number" id="drWt" step="0.001" placeholder="Wt"></div>
@@ -121,6 +121,7 @@
         <div class="header"><h2>Karigar Cash</h2></div>
         
         <select id="cashKarigarSelector" onchange="switchCashKarigar()"></select>
+        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generateCashPDF()">📄 DOWNLOAD CASH SLIP</button>
 
         <div class="input-card" style="border-top: 5px solid var(--navy);">
             <div style="display:flex; gap:5px;"><input type="text" id="cashDate" placeholder="Date"><input type="text" id="cashPart" placeholder="Particular (GPay/Cash)"></div>
@@ -214,14 +215,14 @@
         currentId = id; saveData(); hideModal(); refreshUI();
     }
 
-    // --- JOBWORK LOGIC (RESTORED) ---
+    // --- JOBWORK LOGIC ---
     function addEntry(type) {
         if(!currentId) return;
         const wt = parseFloat(document.getElementById(type.toLowerCase() + 'Wt').value);
         if (isNaN(wt)) return;
         let entry = { 
-            date: document.getElementById(type.toLowerCase() + 'Date').value, 
-            saman: document.getElementById(type.toLowerCase() + 'Saman').value, 
+            date: document.getElementById(type.toLowerCase() + 'Date').value || new Date().toLocaleDateString('en-GB'), 
+            saman: document.getElementById(type.toLowerCase() + 'Saman').value || "Gold", 
             wt: wt 
         };
         if (type === 'Cr') {
@@ -327,13 +328,27 @@
 
     function generatePDF() {
         const k = masterData[currentId]; if(!k) return;
-        let pdfHTML = `<div style="padding:20px; text-align:center;"><h2>GOPI JEWELLERS</h2><p>Karigar: ${k.name}</p><table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;"><thead><tr style="background:#eee;"><th>Dr Date</th><th>Dr Wt</th><th>Cr Date</th><th>Cr Wt</th><th>Net</th></tr></thead><tbody>`;
+        let pdfHTML = `<div style="padding:20px; text-align:center;"><h2>GOPI JEWELLERS</h2><p><b>Gold Statement: ${k.name}</b></p><table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;"><thead><tr style="background:#eee;"><th>Dr Date</th><th>Saman</th><th>Dr Wt</th><th>Cr Date</th><th>Saman</th><th>Cr Wt</th><th>Net</th></tr></thead><tbody>`;
         const rows = Math.max(k.dr.length, k.cr.length);
         for (let i = 0; i < rows; i++) {
-            pdfHTML += `<tr><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1) || '-'}</td></tr>`;
+            pdfHTML += `<tr><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.saman || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.saman || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1) || '-'}</td></tr>`;
         }
-        pdfHTML += `</tbody></table><h3>Total: ${document.getElementById('dispRs').innerText}</h3></div>`;
-        html2pdf().from(pdfHTML).set({ margin: 5, filename: `${k.name}_Slip.pdf`, html2canvas: { scale: 2 } }).save();
+        pdfHTML += `</tbody></table><h3 style="margin-top:20px;">Net Settlement: ${document.getElementById('dispRs').innerText}</h3></div>`;
+        html2pdf().from(pdfHTML).set({ margin: 5, filename: `${k.name}_Gold_Slip.pdf`, html2canvas: { scale: 2 } }).save();
+    }
+
+    function generateCashPDF() {
+        const k = masterData[currentId]; if(!k || !k.cash) return;
+        let bal = 0;
+        let pdfHTML = `<div style="padding:20px; text-align:center;"><h2>GOPI JEWELLERS</h2><p><b>Cash Statement: ${k.name}</b></p><table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;"><thead><tr style="background:#eee;"><th>Date</th><th>Particular</th><th>Paid (Dr)</th><th>Recd (Cr)</th><th>Balance</th></tr></thead><tbody>`;
+        k.cash.forEach(c => {
+            let paid = c.type === 'Paid' ? c.amt : 0;
+            let recd = c.type === 'Recd' ? c.amt : 0;
+            bal += (paid - recd);
+            pdfHTML += `<tr><td style="border:1px solid #ddd; padding:8px;">${c.date}</td><td style="border:1px solid #ddd; padding:8px;">${c.part}</td><td style="border:1px solid #ddd; padding:8px; color:red;">${paid || '-'}</td><td style="border:1px solid #ddd; padding:8px; color:green;">${recd || '-'}</td><td style="border:1px solid #ddd; padding:8px; font-weight:bold;">₹${bal}</td></tr>`;
+        });
+        pdfHTML += `</tbody></table><h3 style="margin-top:20px; color:#1e3a8a;">Final Balance: ₹${bal}</h3></div>`;
+        html2pdf().from(pdfHTML).set({ margin: 10, filename: `${k.name}_Cash_Slip.pdf`, html2canvas: { scale: 2 } }).save();
     }
 </script>
 </body>
