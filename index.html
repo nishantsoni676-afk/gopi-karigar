@@ -9,40 +9,27 @@
         :root { --gold: #d4af37; --dark: #1a1a1a; --debit-red: #e74c3c; --credit-green: #27ae60; --navy: #1e3a8a; }
         html, body { height: 100%; margin: 0; padding: 0; background: #f0f2f5; font-family: -apple-system, sans-serif; }
         .container { background: white; width: 100%; min-height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; }
-        
         .page { display: none; flex-direction: column; padding: 10px; box-sizing: border-box; min-height: 100vh; }
         .page.active { display: flex; }
-        .header { text-align: center; border-bottom: 3px solid var(--gold); padding-bottom: 8px; margin-bottom: 12px; }
         
         /* Menu Styling */
         .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 25px; flex-grow: 1; align-content: center; }
-        .menu-card { background: var(--dark); color: white; padding: 40px 20px; border-radius: 15px; text-align: center; border: 3px solid var(--gold); cursor: pointer; }
-        
-        /* Inputs & Buttons */
+        .menu-card { background: var(--dark); color: white; padding: 40px 20px; border-radius: 15px; text-align: center; border: 4px solid var(--gold); cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .menu-card h2 { margin: 10px 0 0; font-size: 24px; text-transform: uppercase; font-weight: 900; }
+
+        /* Shared UI Elements */
+        .header { text-align: center; border-bottom: 3px solid var(--gold); padding-bottom: 8px; margin-bottom: 12px; }
         input, select, .btn-nav { width: 100%; padding: 15px; border-radius: 8px; border: 2px solid #ccc; font-weight: bold; margin-bottom: 8px; font-size: 16px; box-sizing: border-box; }
         .btn-nav { background: var(--gold); color: var(--dark); text-transform: uppercase; border: none; cursor: pointer; }
         .btn-footer { width: 100%; padding: 20px; border: none; border-radius: 10px; font-weight: 900; color: white; margin-top: 10px; font-size: 20px; cursor: pointer; }
         
-        .input-card { padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 2px solid #ddd; }
-        .dr-card { border-left: 10px solid var(--debit-red); background: #fffafa; }
-        .cr-card { border-left: 10px solid var(--credit-green); background: #fafffa; }
-        
-        .table-wrap { flex-grow: 1; min-height: 350px; overflow: auto; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; }
+        .input-card { padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 2px solid #ddd; background: #f9f9f9; }
+        .table-wrap { flex-grow: 1; min-height: 350px; overflow: auto; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; background: white; }
         table { width: 100%; border-collapse: collapse; min-width: 600px; font-size: 14px; font-weight: bold; }
         th { position: sticky; top: 0; background: #eee; z-index: 10; border-bottom: 2px solid #ddd; padding: 10px; }
         td { padding: 10px; text-align: center; border: 1px solid #ddd; }
         
-        .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; }
-
-        .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
-        .stat-card { background: var(--dark); color: white; padding: 12px; border-radius: 8px; text-align: center; }
-        .stat-card div { font-size: 20px; font-weight: 900; color: var(--gold); }
-        .full-width-card { grid-column: span 2; padding: 15px; border: 2px solid var(--gold); }
-        .amount-card { background: var(--navy); border: 3px solid var(--gold); }
-
-        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
         .logo-container { cursor: pointer; position: relative; display: inline-block; }
-        .logo-container:hover::after { content: "Tap to Change"; position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: white; font-size: 10px; padding: 2px; }
     </style>
 </head>
 <body>
@@ -61,139 +48,44 @@
     <div id="main-menu" class="page">
         <div class="header"><h2>Control Panel</h2></div>
         <div class="menu-grid">
-            <div class="menu-card" onclick="openModule('jobwork-page')">
-                <span style="font-size: 50px;">⚖️</span>
-                <h2>Karigar Jobwork</h2>
-            </div>
-            <div class="menu-card" onclick="openModule('cash-page')">
-                <span style="font-size: 50px;">💸</span>
-                <h2>Karigar Cash</h2>
-            </div>
+            <div class="menu-card" onclick="openModule('jobwork-page')">⚖️<h2>Karigar Jobwork</h2></div>
+            <div class="menu-card" onclick="openModule('cash-page')">💸<h2>Karigar Cash</h2></div>
+            <div class="menu-card" onclick="openModule('cust-page')" style="background:var(--navy);">👤<h2>Add Customer</h2></div>
+        </div>
+    </div>
+
+    <div id="cust-page" class="page">
+        <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
+        <div class="header"><h3>Customer Management</h3></div>
+        <div class="input-card">
+            <input type="text" id="custName" placeholder="Full Name">
+            <input type="text" id="custPhone" placeholder="Phone Number">
+            <input type="text" id="custAddr" placeholder="City/Address">
+            <button class="btn-footer" style="background:var(--credit-green);" onclick="addCustomer()">SAVE CUSTOMER</button>
+        </div>
+        <div class="table-wrap">
+            <table style="min-width: 100%;">
+                <thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>Action</th></tr></thead>
+                <tbody id="custListBody"></tbody>
+            </table>
         </div>
     </div>
 
     <div id="jobwork-page" class="page">
         <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
-        <div class="header">
-            <img class="shopLogoSmall" src="" style="width:50px; height:50px; border-radius:50%; vertical-align: middle;">
-            <div id="syncStatus" style="font-size:12px; color:#888; font-weight:900;">☁ CONNECTED</div>
         </div>
-        
-        <select id="karigarSelector" onchange="switchKarigar()"></select>
-        <button class="btn-nav" onclick="showModal()">+ NEW REGISTRATION</button>
-        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generatePDF()">📄 DOWNLOAD GOLD SLIP</button>
-
-        <div class="input-card dr-card">
-            <div style="display:flex; gap:5px;"><input type="text" id="drDate" placeholder="Date"><input type="text" id="drSaman" placeholder="Saman"><input type="number" id="drWt" step="0.001" placeholder="Wt"></div>
-            <button class="btn-footer" style="background:var(--debit-red);" onclick="addEntry('Dr')">ADD ISSUE (DR)</button>
-        </div>
-
-        <div class="input-card cr-card">
-            <div style="display:flex; gap:5px;"><input type="text" id="crDate" placeholder="Date"><input type="text" id="crSaman" placeholder="Saman"><input type="number" id="crWt" step="0.001" placeholder="Wt"></div>
-            <button class="btn-footer" style="background:var(--credit-green);" onclick="addEntry('Cr')">ADD JAMA (CR)</button>
-        </div>
-
-        <div style="padding:15px; background:#eee; border-radius:10px; display: flex; align-items: center; justify-content: space-between;">
-            <label style="font-size:18px; font-weight:900;">GOLD RATE:</label>
-            <input type="number" id="rate" oninput="calculate()" placeholder="₹ Rate" style="width: 60%; margin-bottom: 0;">
-        </div>
-
-        <div class="table-wrap">
-            <table id="goldTable">
-                <thead>
-                    <tr><th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th><th colspan="4" style="color:var(--credit-green)">CR - JAMA</th></tr>
-                    <tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Total Cr</th><th>Net</th></tr>
-                </thead>
-                <tbody id="ledgerBody"></tbody>
-            </table>
-        </div>
-
-        <div class="summary">
-            <div class="stat-card"><small>TOTAL DR</small><div id="dispDr">0.000</div></div>
-            <div class="stat-card"><small>TOTAL CR</small><div id="dispCr">0.000</div></div>
-            <div class="stat-card"><small>TOTAL NET</small><div id="dispTotalNet">0.0</div></div>
-            <div class="stat-card"><small>BALANCE</small><div id="dispBal">0.000</div></div>
-            <div class="stat-card full-width-card" style="background:#2c3e50"><small>KAM FINE (91.00)</small><div id="dispNet">0.00000</div></div>
-            <div class="stat-card full-width-card amount-card"><small>SETTLEMENT AMOUNT</small><div id="dispRs">₹0</div></div>
-        </div>
-        <button class="btn-footer" style="background:#e74c3c; margin-bottom:30px;" onclick="deleteKarigar()">DELETE PROFILE</button>
-    </div>
 
     <div id="cash-page" class="page">
         <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
-        <div class="header"><h2>Karigar Cash</h2></div>
-        
-        <select id="cashKarigarSelector" onchange="switchCashKarigar()"></select>
-        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generateCashPDF()">📄 DOWNLOAD CASH SLIP</button>
-
-        <div class="input-card" style="border-top: 5px solid var(--navy);">
-            <div style="display:flex; gap:5px;"><input type="text" id="cashDate" placeholder="Date"><input type="text" id="cashPart" placeholder="Particular (GPay/Cash)"></div>
-            <div style="display:flex; gap:5px; margin-top:5px;">
-                <input type="number" id="cashAmt" placeholder="Amount ₹">
-                <select id="cashType" style="margin-bottom:0; width:40%;">
-                    <option value="Paid">PAID</option>
-                    <option value="Recd">RECD</option>
-                </select>
-            </div>
-            <button class="btn-footer" style="background:var(--navy);" onclick="addCashEntry()">SAVE CASH ENTRY</button>
         </div>
-
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr><th>Date</th><th>Particular</th><th>Paid</th><th>Recd</th><th>Balance</th><th>X</th></tr>
-                </thead>
-                <tbody id="cashTableBody"></tbody>
-            </table>
-        </div>
-
-        <div class="summary">
-            <div class="stat-card full-width-card amount-card">
-                <small>TOTAL CASH BALANCE</small>
-                <div id="dispCashBal">₹0</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="modal">
-    <div style="background:white; padding:25px; border-radius:12px; width:90%; max-width:400px;">
-        <h2 style="text-align:center;">Register Karigar</h2>
-        <input type="text" id="newName" placeholder="Karigar Name">
-        <input type="tel" id="newPhone" placeholder="Phone Number">
-        <input type="text" id="newAddress" placeholder="Address">
-        <button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">SAVE PROFILE</button>
-        <button class="btn-footer" style="background:#999;" onclick="hideModal()">CANCEL</button>
-    </div>
 </div>
 
 <script>
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx0G79ae_2xJR8kBKE2CxjL_62qOUv0_BqzzmTN5YhopZ61XTg0F499a8QvQ3cTpGjcXw/exec";
     const SHOP_PASS = "1234";
-    let masterData = {};
-    let currentId = "";
+    let masterData = { customers: {} };
 
-    // Load logo on start
-    window.onload = () => {
-        const savedLogo = localStorage.getItem('shopLogo');
-        if(savedLogo) {
-            document.getElementById('shopLogo').src = savedLogo;
-            document.querySelectorAll('.shopLogoSmall').forEach(img => img.src = savedLogo);
-        }
-    };
-
-    function uploadLogo(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('shopLogo').src = e.target.result;
-                document.querySelectorAll('.shopLogoSmall').forEach(img => img.src = e.target.result);
-                localStorage.setItem('shopLogo', e.target.result);
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
+    // Function to handle login
     function checkPass() {
         if(document.getElementById('passInput').value === SHOP_PASS) {
             openModule('main-menu');
@@ -201,181 +93,73 @@
         } else { alert("Wrong Password!"); }
     }
 
+    // Function to switch between pages
     function openModule(id) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        refreshUI();
+        if(id === 'cust-page') refreshCustUI();
     }
 
+    // Cloud Data Management
     async function loadFromServer() {
         try {
-            const response = await fetch(CLOUD_URL);
-            const text = await response.text();
-            masterData = text.trim() ? JSON.parse(text) : {};
-            currentId = localStorage.getItem('gopi_active_id') || Object.keys(masterData)[0] || "";
-            refreshUI();
-        } catch (err) { masterData = JSON.parse(localStorage.getItem('gopi_master_cloud')) || {}; refreshUI(); }
+            const r = await fetch(CLOUD_URL);
+            const t = await r.text();
+            const cloudData = t.trim() ? JSON.parse(t) : {};
+            masterData = { ...masterData, ...cloudData };
+            if(!masterData.customers) masterData.customers = {};
+            refreshCustUI();
+        } catch (e) { console.log("Cloud Error"); }
     }
 
     function saveData() {
-        localStorage.setItem('gopi_master_cloud', JSON.stringify(masterData));
-        localStorage.setItem('gopi_active_id', currentId);
         fetch(CLOUD_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(masterData) });
     }
 
-    function showModal() { document.getElementById('modal').style.display = 'flex'; }
-    function hideModal() { document.getElementById('modal').style.display = 'none'; }
-
-    function registerKarigar() {
-        const name = document.getElementById('newName').value;
-        const phone = document.getElementById('newPhone').value;
-        const address = document.getElementById('newAddress').value;
-        if (!name) return alert("Enter Name");
-        const id = "K_" + Date.now();
-        masterData[id] = { name, phone: phone || 'N/A', address: address || 'N/A', dr: [], cr: [], cash: [] };
-        currentId = id; saveData(); hideModal(); refreshUI();
-    }
-
-    // Rest of your restored Jobwork Logic
-    function addEntry(type) {
-        if(!currentId) return;
-        const wt = parseFloat(document.getElementById(type.toLowerCase() + 'Wt').value);
-        if (isNaN(wt)) return;
-        let entry = { 
-            date: document.getElementById(type.toLowerCase() + 'Date').value || new Date().toLocaleDateString('en-GB'), 
-            saman: document.getElementById(type.toLowerCase() + 'Saman').value || "Gold", 
-            wt: wt 
+    // Customer Logic
+    function addCustomer() {
+        const name = document.getElementById('custName').value;
+        if(!name) return alert("Please enter a name");
+        const id = "C_" + Date.now();
+        masterData.customers[id] = {
+            name: name,
+            phone: document.getElementById('custPhone').value,
+            addr: document.getElementById('custAddr').value
         };
-        if (type === 'Cr') {
-            if (wt < 1) { entry.rounded = 0; }
-            else {
-                let d = parseFloat((wt - Math.floor(wt)).toFixed(2));
-                entry.rounded = (d < 0.35) ? Math.floor(wt) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(wt) + 1);
-            }
+        saveData();
+        refreshCustUI();
+        document.getElementById('custName').value = '';
+        document.getElementById('custPhone').value = '';
+        document.getElementById('custAddr').value = '';
+    }
+
+    function refreshCustUI() {
+        const body = document.getElementById('custListBody');
+        body.innerHTML = '';
+        Object.keys(masterData.customers).forEach(id => {
+            const c = masterData.customers[id];
+            body.innerHTML += `<tr><td>${c.name}</td><td>${c.phone}</td><td>${c.addr}</td><td><button onclick="deleteCust('${id}')" style="background:red; color:white; border:none; padding:5px; border-radius:5px;">x</button></td></tr>`;
+        });
+    }
+
+    function deleteCust(id) {
+        if(confirm("Delete customer?")) {
+            delete masterData.customers[id];
+            saveData();
+            refreshCustUI();
         }
-        masterData[currentId][type.toLowerCase()].push(entry);
-        saveData(); renderTable();
-        document.getElementById(type.toLowerCase() + 'Wt').value = '';
     }
 
-    function calculate() {
-        let k = masterData[currentId]; if(!k) return;
-        let rate = parseFloat(document.getElementById('rate').value) || 0;
-        const totalDr = k.dr.reduce((s, i) => s + i.wt, 0);
-        const totalCr = k.cr.reduce((s, i) => s + i.wt, 0);
-        const totalNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
-        const netBal = totalDr - totalCr;
-        const fine = ((totalNet * 0.05) - netBal) * 0.91;
-        document.getElementById('dispDr').innerText = totalDr.toFixed(3);
-        document.getElementById('dispCr').innerText = totalCr.toFixed(3);
-        document.getElementById('dispTotalNet').innerText = totalNet.toFixed(1);
-        document.getElementById('dispBal').innerText = netBal.toFixed(3);
-        document.getElementById('dispNet').innerText = fine.toFixed(5);
-        document.getElementById('dispRs').innerText = "₹" + Math.abs(Math.round(fine * rate)).toLocaleString('en-IN');
-    }
-
-    function renderTable() {
-        const body = document.getElementById('ledgerBody'); body.innerHTML = '';
-        let k = masterData[currentId]; if(!k) return;
-        const rows = Math.max(k.dr.length, k.cr.length);
-        for (let i = 0; i < rows; i++) {
-            const dr = k.dr[i]; const cr = k.cr[i];
-            body.innerHTML += `<tr>
-                <td>${dr ? dr.date : '-'}</td><td>${dr ? dr.saman : '-'}</td>
-                <td style="background:#fffafa;">${dr ? dr.wt.toFixed(3) : '-'} ${dr ? `<button class="btn-del-row" onclick="deleteRow('Dr', ${i})">x</button>` : ''}</td>
-                <td>${cr ? cr.date : '-'}</td><td>${cr ? cr.saman : '-'}</td>
-                <td style="background:#fafffa;">${cr ? cr.wt.toFixed(3) : '-'} ${cr ? `<button class="btn-del-row" onclick="deleteRow('Cr', ${i})">x</button>` : ''}</td>
-                <td style="font-weight:900">${cr ? cr.rounded.toFixed(1) : '-'}</td>
-            </tr>`;
+    // Logo Logic
+    function uploadLogo(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('shopLogo').src = e.target.result;
+                localStorage.setItem('shopLogo', e.target.result);
+            };
+            reader.readAsDataURL(input.files[0]);
         }
-        calculate();
-    }
-
-    function addCashEntry() {
-        if(!currentId) return;
-        const amt = parseFloat(document.getElementById('cashAmt').value);
-        if(isNaN(amt)) return;
-        if(!masterData[currentId].cash) masterData[currentId].cash = [];
-        masterData[currentId].cash.push({
-            date: document.getElementById('cashDate').value || new Date().toLocaleDateString('en-GB'),
-            part: document.getElementById('cashPart').value || "Cash",
-            type: document.getElementById('cashType').value,
-            amt: amt
-        });
-        saveData(); renderCashTable();
-        document.getElementById('cashAmt').value = '';
-    }
-
-    function renderCashTable() {
-        const body = document.getElementById('cashTableBody'); body.innerHTML = '';
-        let k = masterData[currentId]; if(!k || !k.cash) return;
-        let bal = 0;
-        k.cash.forEach((c, idx) => {
-            let paid = c.type === 'Paid' ? c.amt : 0;
-            let recd = c.type === 'Recd' ? c.amt : 0;
-            bal += (paid - recd);
-            body.innerHTML += `<tr><td>${c.date}</td><td>${c.part}</td><td style="color:red;">${paid || '-'}</td><td style="color:green;">${recd || '-'}</td><td>₹${bal}</td><td><button class="btn-del-row" onclick="deleteCash(${idx})">x</button></td></tr>`;
-        });
-        document.getElementById('dispCashBal').innerText = "₹" + bal;
-    }
-
-    function refreshUI() {
-        const selectors = [document.getElementById('karigarSelector'), document.getElementById('cashKarigarSelector')];
-        selectors.forEach(sel => {
-            sel.innerHTML = '';
-            Object.keys(masterData).forEach(id => {
-                let opt = document.createElement('option');
-                opt.value = id; opt.innerHTML = masterData[id].name;
-                if(id === currentId) opt.selected = true;
-                sel.appendChild(opt);
-            });
-        });
-        renderTable(); renderCashTable();
-    }
-
-    function switchKarigar() { currentId = document.getElementById('karigarSelector').value; refreshUI(); }
-    function switchCashKarigar() { currentId = document.getElementById('cashKarigarSelector').value; refreshUI(); }
-    function deleteRow(type, index) { if(confirm("Delete?")) { (type === 'Dr' ? masterData[currentId].dr : masterData[currentId].cr).splice(index, 1); saveData(); renderTable(); } }
-    function deleteCash(idx) { if(confirm("Delete?")) { masterData[currentId].cash.splice(idx, 1); saveData(); renderCashTable(); } }
-    function deleteKarigar() { if(confirm("Delete Profile?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); } }
-
-    function generatePDF() {
-        const k = masterData[currentId]; if(!k) return;
-        const logo = localStorage.getItem('shopLogo') || '';
-        let pdfHTML = `<div style="padding:20px; text-align:center; font-family:sans-serif;">
-            ${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}
-            <h2 style="margin:5px 0;">GOPI JEWELLERS</h2>
-            <p>Karigar: <b>${k.name}</b> | Phone: ${k.phone} <br> Address: ${k.address}</p>
-            <table style="width:100%; border-collapse:collapse; font-size:10px; margin-top:10px;">
-                <thead style="background:#eee;"><tr><th>Dr Date</th><th>Saman</th><th>Wt</th><th>Cr Date</th><th>Saman</th><th>Wt</th><th>Net</th></tr></thead>
-                <tbody>`;
-        const rows = Math.max(k.dr.length, k.cr.length);
-        for (let i = 0; i < rows; i++) {
-            pdfHTML += `<tr><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.saman || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.saman || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1) || '-'}</td></tr>`;
-        }
-        pdfHTML += `</tbody></table><h3 style="margin-top:20px;">Settlement Amount: ${document.getElementById('dispRs').innerText}</h3></div>`;
-        html2pdf().from(pdfHTML).set({ margin: 5, filename: `${k.name}_Gold.pdf` }).save();
-    }
-
-    function generateCashPDF() {
-        const k = masterData[currentId]; if(!k) return;
-        const logo = localStorage.getItem('shopLogo') || '';
-        let bal = 0;
-        let pdfHTML = `<div style="padding:20px; text-align:center; font-family:sans-serif;">
-            ${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}
-            <h2 style="margin:5px 0;">GOPI JEWELLERS</h2>
-            <p>Karigar: <b>${k.name}</b> | Phone: ${k.phone} <br> Address: ${k.address}</p>
-            <table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;">
-                <thead style="background:#eee;"><tr><th>Date</th><th>Particular</th><th>Paid (Dr)</th><th>Recd (Cr)</th><th>Balance</th></tr></thead>
-                <tbody>`;
-        k.cash.forEach(c => {
-            let paid = c.type === 'Paid' ? c.amt : 0;
-            let recd = c.type === 'Recd' ? c.amt : 0;
-            bal += (paid - recd);
-            pdfHTML += `<tr><td style="border:1px solid #ddd; padding:8px;">${c.date}</td><td style="border:1px solid #ddd; padding:8px;">${c.part}</td><td style="border:1px solid #ddd; padding:8px; color:red;">${paid || '-'}</td><td style="border:1px solid #ddd; padding:8px; color:green;">${recd || '-'}</td><td style="border:1px solid #ddd; padding:8px; font-weight:bold;">₹${bal}</td></tr>`;
-        });
-        pdfHTML += `</tbody></table><h3 style="margin-top:20px; color:#1e3a8a;">Final Cash Balance: ₹${bal}</h3></div>`;
-        html2pdf().from(pdfHTML).set({ margin: 10, filename: `${k.name}_Cash.pdf` }).save();
     }
 </script>
 </body>
