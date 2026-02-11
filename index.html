@@ -174,6 +174,23 @@
         fetch(CLOUD_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(masterData) });
     }
 
+    // MODIFIED DELETE LOGIC WITH PASSWORD
+    function deleteKarigar() {
+        const pass = prompt("Enter Password to Delete Profile:");
+        if (pass === SHOP_PASS) {
+            if (confirm("Are you sure? All data for this Karigar will be lost forever.")) {
+                delete masterData[currentId];
+                currentId = Object.keys(masterData)[0] || "";
+                saveData();
+                refreshUI();
+                openModule('main-menu');
+            }
+        } else if (pass !== null) {
+            alert("Incorrect Password! Profile was not deleted.");
+        }
+    }
+
+    // REST OF THE LOGIC
     function generateDailyPDF() {
         const logo = localStorage.getItem('shopLogo') || '';
         let bal = 0;
@@ -200,10 +217,8 @@
         const tNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
         const netBal = tDr - tCr;
         const fine = ((tNet * 0.05) * 0.91) - netBal;
-        document.getElementById('dispDr').innerText = tDr.toFixed(3);
-        document.getElementById('dispCr').innerText = tCr.toFixed(3);
-        document.getElementById('dispTotalNet').innerText = tNet.toFixed(1);
-        document.getElementById('dispBal').innerText = netBal.toFixed(3);
+        document.getElementById('dispDr').innerText = tDr.toFixed(3); document.getElementById('dispCr').innerText = tCr.toFixed(3);
+        document.getElementById('dispTotalNet').innerText = tNet.toFixed(1); document.getElementById('dispBal').innerText = netBal.toFixed(3);
         document.getElementById('dispFine').innerText = fine.toFixed(5);
         document.getElementById('dispRs').innerText = "₹" + Math.abs(Math.round(fine * r)).toLocaleString('en-IN');
     }
@@ -216,9 +231,7 @@
         const rows = Math.max(k.dr.length, k.cr.length);
         for (let i = 0; i < rows; i++) {
             const dr = k.dr[i], cr = k.cr[i];
-            body.innerHTML += `<tr>
-                <td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td><td style="background:#fffafa;">${dr?dr.wt.toFixed(3):'-'}<br>${dr?`<button class="btn-edit-row" onclick="openEdit('dr', ${i})">✍</button><button class="btn-del-row" onclick="deleteRow('dr', ${i})">x</button>`:''}</td>
-                <td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td><td style="background:#fafffa;">${cr?cr.wt.toFixed(3):'-'}<br>${cr?`<button class="btn-edit-row" onclick="openEdit('cr', ${i})">✍</button><button class="btn-del-row" onclick="deleteRow('cr', ${i})">x</button>`:''}</td><td>${cr?cr.rounded.toFixed(1):'-'}</td></tr>`;
+            body.innerHTML += `<tr><td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td><td style="background:#fffafa;">${dr?dr.wt.toFixed(3):'-'}<br>${dr?`<button class="btn-edit-row" onclick="openEdit('dr', ${i})">✍</button><button class="btn-del-row" onclick="deleteRow('dr', ${i})">x</button>`:''}</td><td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td><td style="background:#fafffa;">${cr?cr.wt.toFixed(3):'-'}<br>${cr?`<button class="btn-edit-row" onclick="openEdit('cr', ${i})">✍</button><button class="btn-del-row" onclick="deleteRow('cr', ${i})">x</button>`:''}</td><td>${cr?cr.rounded.toFixed(1):'-'}</td></tr>`;
         }
         calculate();
     }
@@ -260,6 +273,23 @@
         document.getElementById('dispDailyBal').innerText = "₹" + bal;
     }
 
+    function addCashEntry() {
+        const amtVal = document.getElementById('cashAmt').value; if(!amtVal) return;
+        if(!masterData[currentId].cash) masterData[currentId].cash = [];
+        masterData[currentId].cash.push({ date: document.getElementById('cashDate').value || getToday(), part: document.getElementById('cashPart').value || "Cash", type: document.getElementById('cashType').value, amt: parseFloat(amtVal) });
+        saveData(); renderCashTable(); document.getElementById('cashAmt').value = ''; document.getElementById('cashPart').value = ''; setDates();
+    }
+
+    function renderCashTable() {
+        const body = document.getElementById('cashTableBody'); body.innerHTML = '<thead><tr><th>Date</th><th>Part</th><th>Paid</th><th>Recd</th><th>Bal</th><th>X</th></tr></thead>';
+        let k = masterData[currentId]; if(!k || !k.cash) return;
+        let bal = 0; k.cash.forEach((c, idx) => {
+            let p = c.type === 'Paid' ? c.amt : 0; let r = c.type === 'Recd' ? c.amt : 0; bal += (p - r);
+            body.innerHTML += `<tr><td>${c.date}</td><td>${c.part}</td><td style="color:red;">${p||'-'}</td><td style="color:green;">${r||'-'}</td><td>₹${bal}</td><td><button class="btn-edit-row" onclick="openEdit('cash', ${idx})">✍</button><button class="btn-del-row" onclick="deleteCash(${idx})">x</button></td></tr>`;
+        });
+        document.getElementById('dispCashBal').innerText = "₹" + bal;
+    }
+
     function openEdit(module, index) {
         editingRef = { module, index }; const entry = masterData[currentId][module][index];
         document.getElementById('editDate').value = entry.date;
@@ -280,16 +310,6 @@
         saveData(); hideEditModal(); refreshUI();
     }
 
-    function renderCashTable() {
-        const body = document.getElementById('cashTableBody'); body.innerHTML = '<thead><tr><th>Date</th><th>Part</th><th>Paid</th><th>Recd</th><th>Bal</th><th>X</th></tr></thead>';
-        let k = masterData[currentId]; if(!k || !k.cash) return;
-        let bal = 0; k.cash.forEach((c, idx) => {
-            let p = c.type === 'Paid' ? c.amt : 0; let r = c.type === 'Recd' ? c.amt : 0; bal += (p - r);
-            body.innerHTML += `<tr><td>${c.date}</td><td>${c.part}</td><td style="color:red;">${p||'-'}</td><td style="color:green;">${r||'-'}</td><td>₹${bal}</td><td><button class="btn-edit-row" onclick="openEdit('cash', ${idx})">✍</button><button class="btn-del-row" onclick="deleteCash(${idx})">x</button></td></tr>`;
-        });
-        document.getElementById('dispCashBal').innerText = "₹" + bal;
-    }
-
     function checkPass() { if(document.getElementById('passInput').value === SHOP_PASS) { openModule('main-menu'); loadFromServer(); } else alert("Wrong!"); }
     function openModule(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); setDates(); refreshUI(); }
     function refreshUI() {
@@ -307,7 +327,6 @@
     function deleteRow(t, i) { if(confirm("Delete?")) { masterData[currentId][t].splice(i, 1); saveData(); renderTable(); } }
     function deleteCash(i) { if(confirm("Delete?")) { masterData[currentId].cash.splice(i, 1); saveData(); renderCashTable(); } }
     function deleteDaily(i) { if(confirm("Delete?")) { masterData.dailyEntries.splice(i, 1); saveData(); renderDailyTable(); } }
-    function deleteKarigar() { if(confirm("Delete Profile?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); openModule('main-menu'); } }
     function generateCashPDF() {
         const k = masterData[currentId]; if(!k) return;
         const logo = localStorage.getItem('shopLogo') || ''; let bal = 0;
