@@ -25,12 +25,15 @@
         table { width: 100%; border-collapse: collapse; min-width: 650px; font-size: 14px; font-weight: bold; }
         th { position: sticky; top: 0; background: #eee; z-index: 10; border-bottom: 2px solid #ddd; padding: 10px; }
         td { padding: 10px; text-align: center; border: 1px solid #ddd; }
-        .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; }
+        .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin: 2px; }
+        .btn-edit-row { background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin: 2px; }
         .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
         .stat-card { background: var(--dark); color: white; padding: 12px; border-radius: 8px; text-align: center; }
         .stat-card div { font-size: 20px; font-weight: 900; color: var(--gold); }
         .full-width-card { grid-column: span 2; padding: 15px; border: 2px solid var(--gold); }
         .amount-card { background: var(--navy); border: 3px solid var(--gold); }
+        .profile-info { background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; font-size: 14px; }
+        #modal, #editModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
@@ -76,7 +79,8 @@
         <select id="karigarSelector" onchange="switchKarigar()"></select>
         <div id="profileDetails" class="profile-info"><b>Phone:</b> <span id="dispPhone">-</span> | <b>Address:</b> <span id="dispAddress">-</span></div>
         <button class="btn-nav" onclick="showModal()">+ NEW REGISTRATION</button>
-        
+        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generatePDF()">📄 DOWNLOAD GOLD SLIP</button>
+
         <div class="input-card dr-card">
             <div style="display:flex; gap:5px;"><input type="text" id="drDate" style="width:35%;"><input type="text" id="drSaman" placeholder="Saman"><input type="number" id="drWt" step="0.001" placeholder="Wt"></div>
             <button class="btn-footer" style="background:var(--debit-red);" onclick="addEntry('dr')">ADD ISSUE (DR)</button>
@@ -86,14 +90,8 @@
             <div style="display:flex; gap:5px; margin-top:5px;"><input type="number" id="crWt" step="0.001" placeholder="Wt"><input type="number" id="crNet" step="0.1" placeholder="Net (Optional)"></div>
             <button class="btn-footer" style="background:var(--credit-green);" onclick="addEntry('cr')">ADD JAMA (CR)</button>
         </div>
-        
-        <div style="padding:15px; background:#eee; border-radius:10px; display: flex; align-items: center; justify-content: space-between;">
-            <label style="font-size:18px; font-weight:900;">GOLD RATE:</label>
-            <input type="number" id="rate" oninput="calculate()" placeholder="₹ Rate" style="width: 60%; margin-bottom: 0;">
-        </div>
-
+        <input type="number" id="rate" oninput="calculate()" placeholder="₹ Gold Rate">
         <div class="table-wrap"><table><thead id="ledgerHeader"></thead><tbody id="ledgerBody"></tbody></table></div>
-        
         <div class="summary">
             <div class="stat-card"><small>TOTAL DR</small><div id="dispDr">0.000</div></div>
             <div class="stat-card"><small>TOTAL CR</small><div id="dispCr">0.000</div></div>
@@ -107,8 +105,9 @@
 
     <div id="cash-page" class="page">
         <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
-        <div class="header"><h2>Karigar Ledger (Cash)</h2></div>
+        <div class="header"><h2>Karigar Cash Ledger</h2></div>
         <select id="cashKarigarSelector" onchange="switchCashKarigar()"></select>
+        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generateCashPDF()">📄 DOWNLOAD CASH SLIP</button>
         <div class="input-card">
             <div style="display:flex; gap:5px;"><input type="text" id="cashDate" style="width:35%;"><input type="text" id="cashPart" placeholder="Particular"></div>
             <div style="display:flex; gap:5px; margin-top:5px;"><input type="number" id="cashAmt" placeholder="Amount ₹"><select id="cashType" style="width:40%;"><option value="Paid">PAID</option><option value="Recd">RECD</option></select></div>
@@ -119,12 +118,25 @@
     </div>
 </div>
 
+<div id="editModal">
+    <div style="background:white; padding:25px; border-radius:12px; width:90%; max-width:400px; text-align:center;">
+        <h2>Edit Entry</h2>
+        <input type="text" id="editDate" placeholder="Date">
+        <input type="text" id="editSaman" placeholder="Particular">
+        <input type="number" id="editVal" step="0.001" placeholder="Value">
+        <div id="netEditSection" style="display:none;"><input type="number" id="editNet" step="0.1" placeholder="Manual Net"></div>
+        <div id="editTypeSection" style="display:none;"><select id="editCashType"><option value="Paid">PAID</option><option value="Recd">RECD</option></select></div>
+        <button class="btn-footer" style="background:var(--credit-green);" onclick="saveEdit()">UPDATE</button>
+        <button class="btn-footer" style="background:#999;" onclick="hideEditModal()">CANCEL</button>
+    </div>
+</div>
+
 <div id="modal"><div style="background:white; padding:25px; border-radius:12px; width:90%; max-width:400px; text-align:center;"><h2>Register</h2><input type="text" id="newName" placeholder="Name"><input type="tel" id="newPhone" placeholder="Phone"><input type="text" id="newAddress" placeholder="Address"><button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">SAVE</button><button class="btn-footer" style="background:#999;" onclick="hideModal()">CANCEL</button></div></div>
 
 <script>
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx0G79ae_2xJR8kBKE2CxjL_62qOUv0_BqzzmTN5YhopZ61XTg0F499a8QvQ3cTpGjcXw/exec";
     const SHOP_PASS = "1234";
-    let masterData = { dailyEntries: [] }; let currentId = "";
+    let masterData = { dailyEntries: [] }; let currentId = ""; let editingRef = null;
 
     function getToday() { return new Date().toLocaleDateString('en-GB'); }
     function setDates() { ['drDate', 'crDate', 'cashDate', 'dailyDate'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = getToday(); }); }
@@ -160,38 +172,21 @@
         fetch(CLOUD_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(masterData) });
     }
 
-    // UPDATED CALCULATION LOGIC
     function calculate() {
         let k = masterData[currentId]; if(!k) return;
         let r = parseFloat(document.getElementById('rate').value) || 0;
-        
         const tDr = k.dr.reduce((s, i) => s + i.wt, 0);
         const tCr = k.cr.reduce((s, i) => s + i.wt, 0);
         const tNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
-        
         const netBal = tDr - tCr;
-        
-        // YOUR CUSTOM FORMULA: ((Total Net * 0.05) * 0.91) - Balance
+        // THE 91% CUSTOM LOGIC
         const fine = ((tNet * 0.05) * 0.91) - netBal;
-        
         document.getElementById('dispDr').innerText = tDr.toFixed(3);
         document.getElementById('dispCr').innerText = tCr.toFixed(3);
         document.getElementById('dispTotalNet').innerText = tNet.toFixed(1);
         document.getElementById('dispBal').innerText = netBal.toFixed(3);
         document.getElementById('dispFine').innerText = fine.toFixed(5);
         document.getElementById('dispRs').innerText = "₹" + Math.abs(Math.round(fine * r)).toLocaleString('en-IN');
-    }
-
-    function addEntry(type) {
-        const wtVal = document.getElementById(type + 'Wt').value; if (!wtVal) return;
-        let entry = { date: document.getElementById(type + 'Date').value || getToday(), saman: document.getElementById(type + 'Saman').value || "Gold", wt: parseFloat(wtVal) };
-        if (type === 'cr') {
-            const manualNet = parseFloat(document.getElementById('crNet').value);
-            if (!isNaN(manualNet)) { entry.rounded = manualNet; } 
-            else { let wt = entry.wt; let d = parseFloat((wt - Math.floor(wt)).toFixed(2)); entry.rounded = (wt < 1) ? 0 : (d < 0.35 ? Math.floor(wt) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(wt) + 1)); }
-            document.getElementById('crNet').value = '';
-        }
-        masterData[currentId][type].push(entry); saveData(); renderTable(); document.getElementById(type + 'Wt').value = ''; document.getElementById(type + 'Saman').value = ''; setDates();
     }
 
     function renderTable() {
@@ -203,12 +198,69 @@
         for (let i = 0; i < rows; i++) {
             const dr = k.dr[i], cr = k.cr[i];
             body.innerHTML += `<tr>
-                <td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td><td style="background:#fffafa;">${dr?dr.wt.toFixed(3):'-'} ${dr?`<button class="btn-del-row" onclick="deleteRow('dr', ${i})">x</button>`:''}</td>
-                <td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td><td style="background:#fafffa;">${cr?cr.wt.toFixed(3):'-'} ${cr?`<button class="btn-del-row" onclick="deleteRow('cr', ${i})">x</button>`:''}</td><td>${cr?cr.rounded.toFixed(1):'-'}</td></tr>`;
+                <td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td><td style="background:#fffafa;">${dr?dr.wt.toFixed(3):'-'}<br>${dr?`<button class="btn-edit-row" onclick="openEdit('dr', ${i})">✍</button><button class="btn-del-row" onclick="deleteRow('dr', ${i})">x</button>`:''}</td>
+                <td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td><td style="background:#fafffa;">${cr?cr.wt.toFixed(3):'-'}<br>${cr?`<button class="btn-edit-row" onclick="openEdit('cr', ${i})">✍</button><button class="btn-del-row" onclick="deleteRow('cr', ${i})">x</button>`:''}</td><td>${cr?cr.rounded.toFixed(1):'-'}</td></tr>`;
         }
         calculate();
     }
 
+    // PDF LOGIC
+    function generatePDF() {
+        const k = masterData[currentId]; if(!k) return;
+        const logo = localStorage.getItem('shopLogo') || '';
+        let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">
+            ${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}
+            <h2 style="margin:5px 0; color:#d4af37;">GOPI JEWELLERS</h2>
+            <div style="margin-bottom:20px; border-bottom:2px solid #eee; padding-bottom:10px;"><b>Karigar:</b> ${k.name} | <b>Phone:</b> ${k.phone} <br> <b>Address:</b> ${k.address}</div>
+            <table style="width:100%; border-collapse:collapse; font-size:11px;"><thead style="background:#f4f4f4;"><tr><th colspan="3" style="border:1px solid #ddd; padding:8px;">DR - ISSUE</th><th colspan="4" style="border:1px solid #ddd; padding:8px;">CR - JAMA</th></tr><tr><th style="border:1px solid #ddd; padding:5px;">Date</th><th style="border:1px solid #ddd; padding:5px;">Saman</th><th style="border:1px solid #ddd; padding:5px;">Wt</th><th style="border:1px solid #ddd; padding:5px;">Date</th><th style="border:1px solid #ddd; padding:5px;">Saman</th><th style="border:1px solid #ddd; padding:5px;">Wt</th><th style="border:1px solid #ddd; padding:5px;">Net</th></tr></thead><tbody>`;
+        const rows = Math.max(k.dr.length, k.cr.length);
+        for (let i = 0; i < rows; i++) {
+            pdfHTML += `<tr><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.saman||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3)||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.date||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.saman||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3)||'-'}</td><td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1)||'-'}</td></tr>`;
+        }
+        pdfHTML += `</tbody></table><div style="margin-top:20px; text-align:right; font-size:14px; border-top:2px solid #d4af37; padding-top:10px;"><b>Settlement Amount: ${document.getElementById('dispRs').innerText}</b></div></div>`;
+        html2pdf().from(pdfHTML).set({ margin: 10, filename: `${k.name}_Gold.pdf` }).save();
+    }
+
+    function generateCashPDF() {
+        const k = masterData[currentId]; if(!k) return;
+        const logo = localStorage.getItem('shopLogo') || ''; let bal = 0;
+        let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">
+            ${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}
+            <h2 style="margin:5px 0; color:#1e3a8a;">GOPI JEWELLERS</h2>
+            <div style="margin-bottom:20px; border-bottom:2px solid #eee; padding-bottom:10px;"><b>Karigar:</b> ${k.name} | <b>Phone:</b> ${k.phone}</div>
+            <table style="width:100%; border-collapse:collapse; font-size:12px;"><thead style="background:#f4f4f4;"><tr><th>Date</th><th>Particular</th><th>Paid</th><th>Recd</th><th>Balance</th></tr></thead><tbody>`;
+        k.cash.forEach(c => { let p = c.type === 'Paid' ? c.amt : 0; let r = c.type === 'Recd' ? c.amt : 0; bal += (p - r); pdfHTML += `<tr><td style="border:1px solid #ddd; padding:8px;">${c.date}</td><td style="border:1px solid #ddd; padding:8px;">${c.part}</td><td style="color:red; border:1px solid #ddd;">${p||'-'}</td><td style="color:green; border:1px solid #ddd;">${r||'-'}</td><td style="font-weight:bold; border:1px solid #ddd;">₹${bal}</td></tr>`; });
+        pdfHTML += `</tbody></table><div style="margin-top:20px; text-align:right; font-size:16px;"><b>Final Balance: ₹${bal}</b></div></div>`;
+        html2pdf().from(pdfHTML).set({ margin: 10, filename: `${k.name}_Cash.pdf` }).save();
+    }
+
+    // CORE APP FUNCTIONS
+    function addEntry(type) {
+        const wtVal = document.getElementById(type + 'Wt').value; if (!wtVal) return;
+        let entry = { date: document.getElementById(type + 'Date').value || getToday(), saman: document.getElementById(type + 'Saman').value || "Gold", wt: parseFloat(wtVal) };
+        if (type === 'cr') {
+            const manualNet = parseFloat(document.getElementById('crNet').value);
+            if (!isNaN(manualNet)) { entry.rounded = manualNet; } 
+            else { let wt = entry.wt; let d = parseFloat((wt - Math.floor(wt)).toFixed(2)); entry.rounded = (wt < 1) ? 0 : (d < 0.35 ? Math.floor(wt) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(wt) + 1)); }
+            document.getElementById('crNet').value = '';
+        }
+        masterData[currentId][type].push(entry); saveData(); renderTable(); document.getElementById(type + 'Wt').value = ''; document.getElementById(type + 'Saman').value = ''; setDates();
+    }
+    function addCashEntry() {
+        const amtVal = document.getElementById('cashAmt').value; if(!amtVal) return;
+        if(!masterData[currentId].cash) masterData[currentId].cash = [];
+        masterData[currentId].cash.push({ date: document.getElementById('cashDate').value || getToday(), part: document.getElementById('cashPart').value || "Cash", type: document.getElementById('cashType').value, amt: parseFloat(amtVal) });
+        saveData(); renderCashTable(); document.getElementById('cashAmt').value = ''; document.getElementById('cashPart').value = ''; setDates();
+    }
+    function renderCashTable() {
+        const body = document.getElementById('cashTableBody'); body.innerHTML = '<thead><tr><th>Date</th><th>Part</th><th>Paid</th><th>Recd</th><th>Bal</th><th>X</th></tr></thead>';
+        let k = masterData[currentId]; if(!k || !k.cash) return;
+        let bal = 0; k.cash.forEach((c, idx) => {
+            let p = c.type === 'Paid' ? c.amt : 0; let r = c.type === 'Recd' ? c.amt : 0; bal += (p - r);
+            body.innerHTML += `<tr><td>${c.date}</td><td>${c.part}</td><td style="color:red;">${p||'-'}</td><td style="color:green;">${r||'-'}</td><td>₹${bal}</td><td><button class="btn-edit-row" onclick="openEdit('cash', ${idx})">✍</button><button class="btn-del-row" onclick="deleteCash(${idx})">x</button></td></tr>`;
+        });
+        document.getElementById('dispCashBal').innerText = "₹" + bal;
+    }
     function addDailyEntry() {
         const amt = parseFloat(document.getElementById('dailyAmt').value); if(isNaN(amt)) return;
         masterData.dailyEntries.push({ date: document.getElementById('dailyDate').value || getToday(), part: document.getElementById('dailyPart').value || "General", type: document.getElementById('dailyType').value, amt: amt });
@@ -222,22 +274,23 @@
         });
         document.getElementById('dispDailyBal').innerText = "₹" + bal;
     }
-    function deleteDaily(i) { if(confirm("Delete?")) { masterData.dailyEntries.splice(i, 1); saveData(); renderDailyTable(); } }
-
-    function addCashEntry() {
-        const amtVal = document.getElementById('cashAmt').value; if(!amtVal) return;
-        if(!masterData[currentId].cash) masterData[currentId].cash = [];
-        masterData[currentId].cash.push({ date: document.getElementById('cashDate').value || getToday(), part: document.getElementById('cashPart').value || "Cash", type: document.getElementById('cashType').value, amt: parseFloat(amtVal) });
-        saveData(); renderCashTable(); document.getElementById('cashAmt').value = ''; document.getElementById('cashPart').value = ''; setDates();
+    function openEdit(module, index) {
+        editingRef = { module, index }; const entry = masterData[currentId][module][index];
+        document.getElementById('editDate').value = entry.date;
+        document.getElementById('editSaman').value = module === 'cash' ? entry.part : entry.saman;
+        document.getElementById('editVal').value = module === 'cash' ? entry.amt : entry.wt;
+        document.getElementById('netEditSection').style.display = (module === 'cr') ? 'block' : 'none';
+        if(module === 'cr') document.getElementById('editNet').value = entry.rounded;
+        document.getElementById('editTypeSection').style.display = (module === 'cash') ? 'block' : 'none';
+        if(module === 'cash') document.getElementById('editCashType').value = entry.type;
+        document.getElementById('editModal').style.display = 'flex';
     }
-    function renderCashTable() {
-        const body = document.getElementById('cashTableBody'); body.innerHTML = '<thead><tr><th>Date</th><th>Part</th><th>Paid</th><th>Recd</th><th>Bal</th><th>X</th></tr></thead>';
-        let k = masterData[currentId]; if(!k || !k.cash) return;
-        let bal = 0; k.cash.forEach((c, idx) => {
-            let p = c.type === 'Paid' ? c.amt : 0; let r = c.type === 'Recd' ? c.amt : 0; bal += (p - r);
-            body.innerHTML += `<tr><td>${c.date}</td><td>${c.part}</td><td style="color:red;">${p||'-'}</td><td style="color:green;">${r||'-'}</td><td>₹${bal}</td><td><button class="btn-del-row" onclick="deleteCash(${idx})">x</button></td></tr>`;
-        });
-        document.getElementById('dispCashBal').innerText = "₹" + bal;
+    function saveEdit() {
+        const { module, index } = editingRef; const entry = masterData[currentId][module][index];
+        entry.date = document.getElementById('editDate').value; const val = parseFloat(document.getElementById('editVal').value);
+        if(module === 'cash') { entry.part = document.getElementById('editSaman').value; entry.amt = val; entry.type = document.getElementById('editCashType').value; }
+        else { entry.saman = document.getElementById('editSaman').value; entry.wt = val; if(module === 'cr') entry.rounded = parseFloat(document.getElementById('editNet').value) || entry.rounded; }
+        saveData(); hideEditModal(); refreshUI();
     }
 
     function checkPass() { if(document.getElementById('passInput').value === SHOP_PASS) { openModule('main-menu'); loadFromServer(); } else alert("Wrong Password!"); }
@@ -253,8 +306,10 @@
     function registerKarigar() { const n = document.getElementById('newName').value; if(!n) return; const id = "K_"+Date.now(); masterData[id]={name:n, phone:document.getElementById('newPhone').value||'N/A', address:document.getElementById('newAddress').value||'N/A', dr:[], cr:[], cash:[]}; currentId=id; saveData(); hideModal(); refreshUI(); }
     function showModal() { document.getElementById('modal').style.display = 'flex'; }
     function hideModal() { document.getElementById('modal').style.display = 'none'; }
+    function hideEditModal() { document.getElementById('editModal').style.display = 'none'; }
     function deleteRow(t, i) { if(confirm("Delete?")) { masterData[currentId][t].splice(i, 1); saveData(); renderTable(); } }
     function deleteCash(i) { if(confirm("Delete?")) { masterData[currentId].cash.splice(i, 1); saveData(); renderCashTable(); } }
+    function deleteDaily(i) { if(confirm("Delete?")) { masterData.dailyEntries.splice(i, 1); saveData(); renderDailyTable(); } }
     function deleteKarigar() { if(confirm("Delete Profile?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); openModule('main-menu'); } }
 </script>
 </body>
