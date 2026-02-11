@@ -15,7 +15,7 @@
         .menu-card { background: var(--dark); color: white; padding: 40px 20px; border-radius: 15px; text-align: center; border: 3px solid var(--gold); cursor: pointer; }
         .menu-card h2 { margin: 10px 0 0; font-size: 24px; text-transform: uppercase; }
 
-        /* LEDGER PAGE STYLING (RESTORED) */
+        /* LEDGER PAGE STYLING */
         .page { display: none; flex-direction: column; padding: 10px; box-sizing: border-box; min-height: 100vh; }
         .page.active { display: flex; }
         .header { text-align: center; border-bottom: 3px solid var(--gold); padding-bottom: 8px; margin-bottom: 12px; }
@@ -110,7 +110,7 @@
             <div class="stat-card"><small>TOTAL CR</small><div id="dispCr">0.000</div></div>
             <div class="stat-card"><small>TOTAL NET</small><div id="dispTotalNet">0.0</div></div>
             <div class="stat-card"><small>BALANCE</small><div id="dispBal">0.000</div></div>
-            <div class="stat-card full-width-card fine-card"><small>KAM FINE (91.60)</small><div id="dispNet">0.00000</div></div>
+            <div class="stat-card full-width-card fine-card"><small>KAM FINE (91.00)</small><div id="dispNet">0.00000</div></div>
             <div class="stat-card full-width-card amount-card"><small>SETTLEMENT AMOUNT</small><div id="dispRs">₹0</div></div>
         </div>
         <button class="btn-footer" style="background:#e74c3c; margin-bottom:30px;" onclick="deleteKarigar()">DELETE PROFILE</button>
@@ -203,7 +203,8 @@
         const totalCr = k.cr.reduce((s, i) => s + i.wt, 0);
         const totalNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
         const netBal = totalDr - totalCr;
-        const fine = ((totalNet * 0.05) - netBal) * 0.916;
+        // UPDATED TO 91% FINE
+        const fine = ((totalNet * 0.05) - netBal) * 0.91;
         document.getElementById('dispDr').innerText = totalDr.toFixed(3);
         document.getElementById('dispCr').innerText = totalCr.toFixed(3);
         document.getElementById('dispTotalNet').innerText = totalNet.toFixed(1);
