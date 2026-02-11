@@ -18,20 +18,20 @@
         .cr-card { border-left: 8px solid var(--credit-green); background: #f5fff5; }
         input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; box-sizing: border-box; margin-top: 5px; }
         .table-wrap { overflow-x: auto; margin: 15px 0; border: 1px solid #eee; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; min-width: 500px; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; min-width: 550px; font-size: 13px; }
         th { background: #f8f9fa; padding: 10px; border: 1px solid #ddd; font-size: 11px; }
         td { padding: 10px; text-align: center; border: 1px solid #f0f0f0; }
+        .editable:hover { background: #e8f0fe; cursor: pointer; }
+        .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 2px 6px; border-radius: 4px; font-size: 10px; cursor: pointer; }
         
         .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .stat-card { background: var(--dark); color: white; padding: 12px; border-radius: 8px; text-align: center; }
         .stat-card div { font-size: 16px; font-weight: bold; color: var(--gold); margin-top: 5px; }
-        
-        /* NEW HIGH-VISIBILITY SETTLEMENT BOX */
         .amount-card { grid-column: span 2; background: var(--navy); padding: 20px; border: 2px solid var(--gold); }
-        .amount-card small { color: #cbd5e1; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
-        .amount-card div { color: var(--gold) !important; font-size: 28px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        .amount-card div { color: var(--gold) !important; font-size: 28px; font-weight: bold; }
         
         .btn-footer { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; margin-top: 10px; }
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
         #login-screen { text-align: center; padding-top: 50px; }
     </style>
 </head>
@@ -39,39 +39,44 @@
 
 <div id="login-screen" class="container">
     <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:80px;">
-    <h2>Gopi Jewellers</h2>
-    <input type="password" id="passInput" placeholder="Enter Password">
+    <h2>Gopi Jewellers Login</h2>
+    <input type="password" id="passInput" placeholder="Password">
     <button class="btn-footer" style="background:var(--gold); color:var(--dark);" onclick="checkPass()">Login</button>
 </div>
 
 <div id="app-content" class="container" style="display:none;">
     <div class="header">
         <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;">
-        <div id="syncStatus" style="font-size:10px; color:#888;">☁ Syncing...</div>
+        <div id="syncStatus" style="font-size:10px; color:#888;">☁ Initializing...</div>
     </div>
 
     <div class="manager-bar">
         <select id="karigarSelector" onchange="switchKarigar()"></select>
-        <button class="btn-nav" onclick="showModal()">+ New Karigar</button>
+        <button class="btn-nav" onclick="showModal()">+ New Karigar Registration</button>
+        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generatePDF()">📄 Download PDF Slip</button>
     </div>
 
     <div class="input-card dr-card">
-        <input type="text" id="drDate" placeholder="Date (e.g. 11 Feb)">
-        <input type="text" id="drSaman" placeholder="Saman">
-        <input type="number" id="drWt" step="0.001" placeholder="Weight">
+        <div style="display:flex; gap:5px;">
+            <input type="text" id="drDate" placeholder="Date">
+            <input type="text" id="drSaman" placeholder="Saman">
+            <input type="number" id="drWt" step="0.001" placeholder="Wt">
+        </div>
         <button class="btn-footer" style="background:var(--debit-red);" onclick="addEntry('Dr')">ADD ISSUE (DR)</button>
     </div>
 
     <div class="input-card cr-card">
-        <input type="text" id="crDate" placeholder="Date">
-        <input type="text" id="crSaman" placeholder="Saman">
-        <input type="number" id="crWt" step="0.001" placeholder="Weight">
+        <div style="display:flex; gap:5px;">
+            <input type="text" id="crDate" placeholder="Date">
+            <input type="text" id="crSaman" placeholder="Saman">
+            <input type="number" id="crWt" step="0.001" placeholder="Wt">
+        </div>
         <button class="btn-footer" style="background:var(--credit-green);" onclick="addEntry('Cr')">ADD JAMA (CR)</button>
     </div>
 
     <div style="padding:10px; background:#eee; border-radius:8px;">
         <label style="font-size:12px; font-weight:bold;">Gold Rate (₹)</label>
-        <input type="number" id="rate" oninput="calculate()" placeholder="Enter Current Rate">
+        <input type="number" id="rate" oninput="calculate()" placeholder="Enter Rate">
     </div>
 
     <div class="table-wrap">
@@ -90,6 +95,17 @@
             <small>Settlement Amount</small>
             <div id="dispRs">₹0</div>
         </div>
+    </div>
+    <button class="btn-footer" style="background:#e74c3c" onclick="deleteKarigar()">Delete This Profile Permanently</button>
+</div>
+
+<div id="modal">
+    <div style="background:white; padding:20px; border-radius:12px; width:90%; max-width:400px;">
+        <h3>Register Karigar</h3>
+        <label>Name</label><input type="text" id="newName">
+        <label>Phone</label><input type="text" id="newPhone">
+        <button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">Save</button>
+        <button class="btn-footer" style="background:#999;" onclick="hideModal()">Cancel</button>
     </div>
 </div>
 
@@ -130,10 +146,27 @@
         } catch (err) { document.getElementById('syncStatus').innerText = "❌ Sync Error"; }
     }
 
+    function saveData() {
+        localStorage.setItem('gopi_master_cloud', JSON.stringify(masterData));
+        localStorage.setItem('gopi_active_id', currentId);
+        syncToServer();
+    }
+
+    function showModal() { document.getElementById('modal').style.display = 'flex'; }
+    function hideModal() { document.getElementById('modal').style.display = 'none'; }
+
+    function registerKarigar() {
+        const name = document.getElementById('newName').value;
+        if (!name) return alert("Enter Name");
+        const id = "K_" + Date.now();
+        masterData[id] = { name, phone: document.getElementById('newPhone').value, dr: [], cr: [], rate: 0 };
+        currentId = id; saveData(); hideModal(); refreshUI();
+    }
+
     function addEntry(type) {
+        if(!currentId) return alert("Select Karigar First");
         const wt = parseFloat(document.getElementById(type.toLowerCase() + 'Wt').value);
         if (isNaN(wt)) return alert("Enter Weight");
-        let k = masterData[currentId];
         let entry = { 
             date: document.getElementById(type.toLowerCase() + 'Date').value, 
             saman: document.getElementById(type.toLowerCase() + 'Saman').value, 
@@ -143,10 +176,25 @@
             let d = parseFloat((wt - Math.floor(wt)).toFixed(2));
             entry.rounded = (d < 0.35) ? Math.floor(wt) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(wt) + 1);
         }
-        k[type.toLowerCase()].push(entry);
-        localStorage.setItem('gopi_master_cloud', JSON.stringify(masterData));
-        syncToServer();
-        renderTable();
+        masterData[currentId][type.toLowerCase()].push(entry);
+        saveData(); renderTable();
+    }
+
+    function editCell(type, index, field) {
+        let k = masterData[currentId];
+        let arr = (type === 'Dr') ? k.dr : k.cr;
+        let newVal = prompt(`Edit ${field}:`, arr[index][field]);
+        if (newVal !== null) {
+            arr[index][field] = (field === 'wt' || field === 'rounded') ? parseFloat(newVal) : newVal;
+            saveData(); renderTable();
+        }
+    }
+
+    function deleteRow(type, index) {
+        if(confirm("Delete this entry?")) {
+            (type === 'Dr' ? masterData[currentId].dr : masterData[currentId].cr).splice(index, 1);
+            saveData(); renderTable();
+        }
     }
 
     function calculate() {
@@ -171,13 +219,18 @@
         const body = document.getElementById('ledgerBody');
         body.innerHTML = '';
         let k = masterData[currentId];
+        if(!k) return;
         const rows = Math.max(k.dr.length, k.cr.length);
         for (let i = 0; i < rows; i++) {
             const dr = k.dr[i]; const cr = k.cr[i];
             body.innerHTML += `<tr>
-                <td>${dr ? dr.date : '-'}</td><td>${dr ? dr.saman : '-'}</td><td>${dr ? dr.wt.toFixed(3) : '-'}</td>
-                <td>${cr ? cr.date : '-'}</td><td>${cr ? cr.saman : '-'}</td><td>${cr ? cr.wt.toFixed(3) : '-'}</td>
-                <td style="font-weight:bold">${cr ? cr.rounded.toFixed(1) : '-'}</td>
+                <td class="editable" onclick="editCell('Dr', ${i}, 'date')">${dr ? dr.date : '-'}</td>
+                <td class="editable" onclick="editCell('Dr', ${i}, 'saman')">${dr ? dr.saman : '-'}</td>
+                <td>${dr ? dr.wt.toFixed(3) : '-'} ${dr ? `<button class="btn-del-row" onclick="deleteRow('Dr', ${i})">x</button>` : ''}</td>
+                <td class="editable" onclick="editCell('Cr', ${i}, 'date')">${cr ? cr.date : '-'}</td>
+                <td class="editable" onclick="editCell('Cr', ${i}, 'saman')">${cr ? cr.saman : '-'}</td>
+                <td class="editable" onclick="editCell('Cr', ${i}, 'wt')">${cr ? cr.wt.toFixed(3) : '-'}</td>
+                <td class="editable" onclick="editCell('Cr', ${i}, 'rounded')" style="font-weight:bold">${cr ? cr.rounded.toFixed(1) : '-'}</td>
             </tr>`;
         }
         calculate();
@@ -193,6 +246,33 @@
             selector.appendChild(opt);
         });
         renderTable();
+    }
+
+    function switchKarigar() { currentId = document.getElementById('karigarSelector').value; localStorage.setItem('gopi_active_id', currentId); refreshUI(); }
+
+    function deleteKarigar() { if(confirm("Permanently delete this Karigar?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); } }
+
+    function generatePDF() {
+        const k = masterData[currentId];
+        let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">
+            <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;">
+            <h2>GOPI JEWELLERS</h2>
+            <p>Karigar: ${k.name} | Rate: ₹${k.rate}</p>
+            <table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;">
+                <tr style="background:#eee;"><th>Date</th><th>Dr Wt</th><th>Cr Wt</th><th>Net</th></tr>`;
+        const rows = Math.max(k.dr.length, k.cr.length);
+        for (let i = 0; i < rows; i++) {
+            pdfHTML += `<tr>
+                <td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date || k.cr[i]?.date || '-'}</td>
+                <td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3) || '-'}</td>
+                <td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3) || '-'}</td>
+                <td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1) || '-'}</td>
+            </tr>`;
+        }
+        pdfHTML += `</table><div style="background:#1e3a8a; color:#d4af37; padding:15px; margin-top:20px; border-radius:10px;">
+            <h3>Total Settlement: ${document.getElementById('dispRs').innerText}</h3>
+        </div></div>`;
+        html2pdf().from(pdfHTML).save(`${k.name}_Gopi_Jewellers.pdf`);
     }
 </script>
 </body>
