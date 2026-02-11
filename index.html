@@ -67,12 +67,12 @@
         <button class="btn-nav" onclick="showModal()">+ NEW REGISTRATION</button>
 
         <div class="input-card dr-card">
-            <div style="display:flex; gap:5px;"><input type="text" id="drDate" readonly style="background:#eee; width:30%;"><input type="text" id="drSaman" placeholder="Saman"><input type="number" id="drWt" step="0.001" placeholder="Wt"></div>
+            <div style="display:flex; gap:5px;"><input type="text" id="drDate" placeholder="Date" style="width:35%;"><input type="text" id="drSaman" placeholder="Saman"><input type="number" id="drWt" step="0.001" placeholder="Wt"></div>
             <button class="btn-footer" style="background:var(--debit-red);" onclick="addEntry('dr')">ADD ISSUE (DR)</button>
         </div>
         
         <div class="input-card cr-card">
-            <div style="display:flex; gap:5px;"><input type="text" id="crDate" readonly style="background:#eee; width:30%;"><input type="text" id="crSaman" placeholder="Saman"></div>
+            <div style="display:flex; gap:5px;"><input type="text" id="crDate" placeholder="Date" style="width:35%;"><input type="text" id="crSaman" placeholder="Saman"></div>
             <div style="display:flex; gap:5px; margin-top:5px;">
                 <input type="number" id="crWt" step="0.001" placeholder="Wt">
                 <input type="number" id="crNet" step="0.1" placeholder="Net (Optional)">
@@ -103,7 +103,7 @@
         <div class="header"><h2>Karigar Cash</h2></div>
         <select id="cashKarigarSelector" onchange="switchCashKarigar()"></select>
         <div class="input-card" style="border-top: 5px solid var(--navy);">
-            <div style="display:flex; gap:5px;"><input type="text" id="cashDate" readonly style="background:#eee; width:30%;"><input type="text" id="cashPart" placeholder="Particular"></div>
+            <div style="display:flex; gap:5px;"><input type="text" id="cashDate" placeholder="Date" style="width:35%;"><input type="text" id="cashPart" placeholder="Particular"></div>
             <div style="display:flex; gap:5px; margin-top:5px;"><input type="number" id="cashAmt" placeholder="Amount ₹"><select id="cashType" style="width:40%;"><option value="Paid">PAID</option><option value="Recd">RECD</option></select></div>
             <button class="btn-footer" style="background:var(--navy);" onclick="addCashEntry()">SAVE CASH ENTRY</button>
         </div>
@@ -165,7 +165,11 @@
         if(!currentId) return;
         const wtVal = document.getElementById(type + 'Wt').value; if (!wtVal) return;
         const wt = parseFloat(wtVal);
-        let entry = { date: getToday(), saman: document.getElementById(type + 'Saman').value || "Gold", wt: wt };
+        let entry = { 
+            date: document.getElementById(type + 'Date').value || getToday(), 
+            saman: document.getElementById(type + 'Saman').value || "Gold", 
+            wt: wt 
+        };
         if (type === 'cr') {
             const manualNet = parseFloat(document.getElementById('crNet').value);
             if (!isNaN(manualNet)) { entry.rounded = manualNet; } 
@@ -174,13 +178,20 @@
         }
         masterData[currentId][type].push(entry); saveData(); renderTable(); 
         document.getElementById(type + 'Wt').value = ''; document.getElementById(type + 'Saman').value = '';
+        setDates(); // Refresh date to today after entry
     }
 
     function addCashEntry() {
         const amtVal = document.getElementById('cashAmt').value; if(!amtVal) return;
         if(!masterData[currentId].cash) masterData[currentId].cash = [];
-        masterData[currentId].cash.push({ date: getToday(), part: document.getElementById('cashPart').value || "Cash", type: document.getElementById('cashType').value, amt: parseFloat(amtVal) });
+        masterData[currentId].cash.push({ 
+            date: document.getElementById('cashDate').value || getToday(), 
+            part: document.getElementById('cashPart').value || "Cash", 
+            type: document.getElementById('cashType').value, 
+            amt: parseFloat(amtVal) 
+        });
         saveData(); renderCashTable(); document.getElementById('cashAmt').value = ''; document.getElementById('cashPart').value = '';
+        setDates();
     }
 
     function calculate() {
