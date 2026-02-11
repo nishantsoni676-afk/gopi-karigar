@@ -12,25 +12,35 @@
         .page { display: none; flex-direction: column; padding: 10px; box-sizing: border-box; min-height: 100vh; }
         .page.active { display: flex; }
         .header { text-align: center; border-bottom: 3px solid var(--gold); padding-bottom: 8px; margin-bottom: 12px; }
+        
+        /* Menu Styling */
         .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 25px; flex-grow: 1; align-content: center; }
         .menu-card { background: var(--dark); color: white; padding: 40px 20px; border-radius: 15px; text-align: center; border: 3px solid var(--gold); cursor: pointer; }
+        .menu-card h2 { margin: 10px 0 0; font-size: 24px; text-transform: uppercase; font-weight: 900; }
+
+        /* Inputs & Buttons */
         input, select, .btn-nav { width: 100%; padding: 15px; border-radius: 8px; border: 2px solid #ccc; font-weight: bold; margin-bottom: 8px; font-size: 16px; box-sizing: border-box; }
         .btn-nav { background: var(--gold); color: var(--dark); text-transform: uppercase; border: none; cursor: pointer; }
         .btn-footer { width: 100%; padding: 20px; border: none; border-radius: 10px; font-weight: 900; color: white; margin-top: 10px; font-size: 20px; cursor: pointer; }
+        
         .input-card { padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 2px solid #ddd; }
         .dr-card { border-left: 10px solid var(--debit-red); background: #fffafa; }
         .cr-card { border-left: 10px solid var(--credit-green); background: #fafffa; }
+        
         .table-wrap { flex-grow: 1; min-height: 350px; overflow: auto; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; background: white; }
         table { width: 100%; border-collapse: collapse; min-width: 650px; font-size: 14px; font-weight: bold; }
         th { position: sticky; top: 0; background: #eee; z-index: 10; border-bottom: 2px solid #ddd; padding: 10px; }
         td { padding: 10px; text-align: center; border: 1px solid #ddd; }
+        
         .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin: 2px; }
         .btn-edit-row { background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 4px; margin: 2px; }
+
         .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
         .stat-card { background: var(--dark); color: white; padding: 12px; border-radius: 8px; text-align: center; }
         .stat-card div { font-size: 20px; font-weight: 900; color: var(--gold); }
         .full-width-card { grid-column: span 2; padding: 15px; border: 2px solid var(--gold); }
         .amount-card { background: var(--navy); border: 3px solid var(--gold); }
+
         #modal, #editModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
         .logo-container { cursor: pointer; position: relative; display: inline-block; }
     </style>
@@ -73,11 +83,22 @@
             <div style="display:flex; gap:5px;"><input type="text" id="crDate" placeholder="Date"><input type="text" id="crSaman" placeholder="Saman"><input type="number" id="crWt" step="0.001" placeholder="Wt"></div>
             <button class="btn-footer" style="background:var(--credit-green);" onclick="addEntry('cr')">ADD JAMA (CR)</button>
         </div>
+
         <div style="padding:15px; background:#eee; border-radius:10px; display: flex; align-items: center; justify-content: space-between;">
             <label style="font-size:18px; font-weight:900;">GOLD RATE:</label>
             <input type="number" id="rate" oninput="calculate()" placeholder="₹ Rate" style="width: 60%; margin-bottom: 0;">
         </div>
-        <div class="table-wrap"><table><tbody id="ledgerBody"></tbody></table></div>
+
+        <div class="table-wrap">
+            <table id="goldTable">
+                <thead>
+                    <tr><th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th><th colspan="4" style="color:var(--credit-green)">CR - JAMA</th></tr>
+                    <tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Wt</th><th>Net</th></tr>
+                </thead>
+                <tbody id="ledgerBody"></tbody>
+            </table>
+        </div>
+
         <div class="summary">
             <div class="stat-card"><small>TOTAL DR</small><div id="dispDr">0.000</div></div>
             <div class="stat-card"><small>TOTAL CR</small><div id="dispCr">0.000</div></div>
@@ -93,12 +114,28 @@
         <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
         <div class="header"><h2>Karigar Cash</h2></div>
         <select id="cashKarigarSelector" onchange="switchCashKarigar()"></select>
+
         <div class="input-card" style="border-top: 5px solid var(--navy);">
-            <div style="display:flex; gap:5px;"><input type="text" id="cashDate" placeholder="Date"><input type="text" id="cashPart" placeholder="Particular"></div>
-            <div style="display:flex; gap:5px; margin-top:5px;"><input type="number" id="cashAmt" placeholder="Amount ₹"><select id="cashType" style="width:40%;"><option value="Paid">PAID</option><option value="Recd">RECD</option></select></div>
+            <div style="display:flex; gap:5px;"><input type="text" id="cashDate" placeholder="Date"><input type="text" id="cashPart" placeholder="Particular (GPay/Cash)"></div>
+            <div style="display:flex; gap:5px; margin-top:5px;">
+                <input type="number" id="cashAmt" placeholder="Amount ₹">
+                <select id="cashType" style="margin-bottom:0; width:40%;">
+                    <option value="Paid">PAID</option>
+                    <option value="Recd">RECD</option>
+                </select>
+            </div>
             <button class="btn-footer" style="background:var(--navy);" onclick="addCashEntry()">SAVE CASH ENTRY</button>
         </div>
-        <div class="table-wrap"><table><tbody id="cashTableBody"></tbody></table></div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>Date</th><th>Particular</th><th>Paid</th><th>Recd</th><th>Balance</th><th>X</th></tr>
+                </thead>
+                <tbody id="cashTableBody"></tbody>
+            </table>
+        </div>
+
         <div class="summary"><div class="stat-card full-width-card amount-card"><small>TOTAL CASH BALANCE</small><div id="dispCashBal">₹0</div></div></div>
     </div>
 </div>
@@ -109,12 +146,12 @@
         <input type="text" id="editDate" placeholder="Date">
         <input type="text" id="editSaman" placeholder="Particular">
         <input type="number" id="editVal" step="0.001" placeholder="Weight/Amount">
-        <div id="netEditSection" style="display:none; text-align:left; margin-top:10px;">
-            <label style="font-size: 12px; color: #666; font-weight:bold;">Manual Net (Rounded):</label>
+        <div id="netEditSection" style="display:none; text-align:left; padding:10px 0;">
+            <label style="font-weight:bold; font-size:12px;">NET WEIGHT (Edit this manually):</label>
             <input type="number" id="editNet" step="0.1" placeholder="Manual Net">
         </div>
         <div id="editTypeSection" style="display:none;"><select id="editCashType"><option value="Paid">PAID</option><option value="Recd">RECD</option></select></div>
-        <button class="btn-footer" style="background:var(--credit-green);" onclick="saveEdit()">UPDATE</button>
+        <button class="btn-footer" style="background:var(--credit-green);" onclick="saveEdit()">UPDATE DATA</button>
         <button class="btn-footer" style="background:#999;" onclick="hideEditModal()">CANCEL</button>
     </div>
 </div>
@@ -185,7 +222,7 @@
         const rows = Math.max(k.dr.length, k.cr.length);
         for (let i = 0; i < rows; i++) {
             const dr = k.dr[i], cr = k.cr[i];
-            body.innerHTML += `<tr><td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td><td>${dr?dr.wt.toFixed(3):'-'}<br>${dr?`<button class="btn-edit-row" onclick="openEdit('dr', ${i})">✍</button><button class="btn-del-row" onclick="deleteRow('dr', ${i})">x</button>`:''}</td><td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td><td>${cr?cr.wt.toFixed(3):'-'}<br>${cr?`<button class="btn-edit-row" onclick="openEdit('cr', ${i})">✍</button><button class="btn-del-row" onclick="deleteRow('cr', ${i})">x</button>`:''}</td><td>${cr?cr.rounded.toFixed(1):'-'}</td></tr>`;
+            body.innerHTML += `<tr><td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td><td style="background:#fffafa;">${dr?dr.wt.toFixed(3):'-'}<br>${dr?`<button class="btn-edit-row" onclick="openEdit('dr', ${i})">✍</button><button class="btn-del-row" onclick="deleteRow('dr', ${i})">x</button>`:''}</td><td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td><td style="background:#fafffa;">${cr?cr.wt.toFixed(3):'-'}<br>${cr?`<button class="btn-edit-row" onclick="openEdit('cr', ${i})">✍</button><button class="btn-del-row" onclick="deleteRow('cr', ${i})">x</button>`:''}</td><td>${cr?cr.rounded.toFixed(1):'-'}</td></tr>`;
         }
         calculate();
     }
@@ -210,10 +247,10 @@
     function openEdit(module, index) {
         editingRef = { module, index }; const entry = masterData[currentId][module][index];
         document.getElementById('editDate').value = entry.date;
-        document.getElementById('editSaman').value = module === 'cash' ? entry.part : entry.saman;
-        document.getElementById('editVal').value = module === 'cash' ? entry.amt : entry.wt;
+        document.getElementById('editSaman').value = (module === 'cash') ? entry.part : entry.saman;
+        document.getElementById('editVal').value = (module === 'cash') ? entry.amt : entry.wt;
         
-        // Setup Net Field for CR
+        // Show Net Box for CR
         if(module === 'cr') {
             document.getElementById('netEditSection').style.display = 'block';
             document.getElementById('editNet').value = entry.rounded;
@@ -227,24 +264,32 @@
     }
 
     function saveEdit() {
-        const { module, index } = editingRef; const entry = masterData[currentId][module][index];
+        const { module, index } = editingRef; 
+        const entry = masterData[currentId][module][index];
+        
         entry.date = document.getElementById('editDate').value; 
-        const newVal = parseFloat(document.getElementById('editVal').value);
+        const val = parseFloat(document.getElementById('editVal').value);
         
         if(module === 'cash') { 
             entry.part = document.getElementById('editSaman').value; 
-            entry.amt = newVal; 
+            entry.amt = val; 
             entry.type = document.getElementById('editCashType').value; 
         } else { 
             entry.saman = document.getElementById('editSaman').value; 
-            entry.wt = newVal;
-            // CR Specific Net Save
+            entry.wt = val;
+            
+            // CR specific: Override calculated net with manual input
             if(module === 'cr') {
                 const manualNet = parseFloat(document.getElementById('editNet').value);
-                entry.rounded = !isNaN(manualNet) ? manualNet : entry.rounded;
+                if(!isNaN(manualNet)) {
+                    entry.rounded = manualNet; 
+                }
             }
         }
-        saveData(); hideEditModal(); refreshUI();
+        
+        saveData(); 
+        hideEditModal(); 
+        refreshUI();
     }
 
     function refreshUI() {
