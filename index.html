@@ -94,16 +94,16 @@
             <div class="stat-card"><small>TOTAL CR</small><div id="dispCr">0.000</div></div>
             <div class="stat-card"><small>TOTAL NET</small><div id="dispTotalNet">0.0</div></div>
             <div class="stat-card"><small>BALANCE</small><div id="dispBal">0.000</div></div>
-            <div class="stat-card full-width-card" style="background:var(--navy); border:2px solid var(--gold);"><small>SETTLEMENT AMOUNT</small><div id="dispRs">₹0</div></div>
+            <div class="stat-card full-width-card" style="background:#2c3e50"><small>KAM FINE (91.00)</small><div id="dispFine">0.00000</div></div>
+            <div class="stat-card full-width-card amount-card"><small>SETTLEMENT AMOUNT</small><div id="dispRs">₹0</div></div>
         </div>
         <button class="btn-footer" style="background:#e74c3c; margin-bottom:30px;" onclick="deleteKarigar()">DELETE PROFILE</button>
     </div>
 
     <div id="cash-page" class="page">
         <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
-        <div class="header"><h2>Karigar Ledger (Cash)</h2></div>
+        <div class="header"><h2>Karigar Cash Ledger</h2></div>
         <select id="cashKarigarSelector" onchange="switchCashKarigar()"></select>
-        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generateCashPDF()">📄 DOWNLOAD CASH SLIP</button>
         <div class="input-card">
             <div style="display:flex; gap:5px;"><input type="text" id="cashDate" style="width:35%;"><input type="text" id="cashPart" placeholder="Particular"></div>
             <div style="display:flex; gap:5px; margin-top:5px;"><input type="number" id="cashAmt" placeholder="Amount ₹"><select id="cashType" style="width:40%;"><option value="Paid">PAID</option><option value="Recd">RECD</option></select></div>
@@ -114,7 +114,7 @@
     </div>
 </div>
 
-<div id="modal"><div style="background:white; padding:25px; border-radius:12px; width:90%; max-width:400px; text-align:center;"><h2>Register Karigar</h2><input type="text" id="newName" placeholder="Name"><input type="tel" id="newPhone" placeholder="Phone"><input type="text" id="newAddress" placeholder="Address"><button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">SAVE</button><button class="btn-footer" style="background:#999;" onclick="hideModal()">CANCEL</button></div></div>
+<div id="modal"><div style="background:white; padding:25px; border-radius:12px; width:90%; max-width:400px; text-align:center;"><h2>Register</h2><input type="text" id="newName" placeholder="Name"><input type="tel" id="newPhone" placeholder="Phone"><input type="text" id="newAddress" placeholder="Address"><button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">SAVE</button><button class="btn-footer" style="background:#999;" onclick="hideModal()">CANCEL</button></div></div>
 
 <script>
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx0G79ae_2xJR8kBKE2CxjL_62qOUv0_BqzzmTN5YhopZ61XTg0F499a8QvQ3cTpGjcXw/exec";
@@ -122,10 +122,7 @@
     let masterData = { dailyEntries: [] }; let currentId = "";
 
     function getToday() { return new Date().toLocaleDateString('en-GB'); }
-    function setDates() { 
-        const today = getToday();
-        ['drDate', 'crDate', 'cashDate', 'dailyDate'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = today; });
-    }
+    function setDates() { ['drDate', 'crDate', 'cashDate', 'dailyDate'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = getToday(); }); }
 
     window.onload = () => {
         const savedLogo = localStorage.getItem('shopLogo');
@@ -158,7 +155,6 @@
         fetch(CLOUD_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(masterData) });
     }
 
-    // DAILY CASH BOOK LOGIC
     function addDailyEntry() {
         const amt = parseFloat(document.getElementById('dailyAmt').value); if(isNaN(amt)) return;
         masterData.dailyEntries.push({ date: document.getElementById('dailyDate').value || getToday(), part: document.getElementById('dailyPart').value || "General", type: document.getElementById('dailyType').value, amt: amt });
@@ -174,7 +170,6 @@
     }
     function deleteDaily(i) { if(confirm("Delete?")) { masterData.dailyEntries.splice(i, 1); saveData(); renderDailyTable(); } }
 
-    // KARIGAR LOGIC
     function addEntry(type) {
         const wtVal = document.getElementById(type + 'Wt').value; if (!wtVal) return;
         let entry = { date: document.getElementById(type + 'Date').value || getToday(), saman: document.getElementById(type + 'Saman').value || "Gold", wt: parseFloat(wtVal) };
@@ -193,13 +188,16 @@
         saveData(); renderCashTable(); document.getElementById('cashAmt').value = ''; document.getElementById('cashPart').value = ''; setDates();
     }
     function renderTable() {
-        document.getElementById('ledgerHeader').innerHTML = `<tr><th colspan="3">DR - ISSUE</th><th colspan="4">CR - JAMA</th></tr><tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Wt</th><th>Net</th></tr>`;
+        document.getElementById('ledgerHeader').innerHTML = `<tr><th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th><th colspan="4" style="color:var(--credit-green)">CR - JAMA</th></tr><tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Wt</th><th>Net</th></tr>`;
         const body = document.getElementById('ledgerBody'); body.innerHTML = '';
         let k = masterData[currentId]; if(!k) return;
         document.getElementById('dispPhone').innerText = k.phone; document.getElementById('dispAddress').innerText = k.address;
         const rows = Math.max(k.dr.length, k.cr.length);
         for (let i = 0; i < rows; i++) {
-            body.innerHTML += `<tr><td>${k.dr[i]?.date||'-'}</td><td>${k.dr[i]?.saman||'-'}</td><td style="background:#fffafa;">${k.dr[i]?k.dr[i].wt.toFixed(3):'-'} ${k.dr[i]?`<button class="btn-del-row" onclick="deleteRow('dr', ${i})">x</button>`:''}</td><td>${k.cr[i]?.date||'-'}</td><td>${k.cr[i]?.saman||'-'}</td><td style="background:#fafffa;">${k.cr[i]?k.cr[i].wt.toFixed(3):'-'} ${k.cr[i]?`<button class="btn-del-row" onclick="deleteRow('cr', ${i})">x</button>`:''}</td><td>${k.cr[i]?k.cr[i].rounded.toFixed(1):'-'}</td></tr>`;
+            const dr = k.dr[i], cr = k.cr[i];
+            body.innerHTML += `<tr>
+                <td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td><td style="background:#fffafa;">${dr?dr.wt.toFixed(3):'-'} ${dr?`<button class="btn-del-row" onclick="deleteRow('dr', ${i})">x</button>`:''}</td>
+                <td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td><td style="background:#fafffa;">${cr?cr.wt.toFixed(3):'-'} ${cr?`<button class="btn-del-row" onclick="deleteRow('cr', ${i})">x</button>`:''}</td><td>${cr?cr.rounded.toFixed(1):'-'}</td></tr>`;
         }
         calculate();
     }
@@ -216,9 +214,11 @@
         let k = masterData[currentId]; if(!k) return;
         let r = parseFloat(document.getElementById('rate').value) || 0;
         const tDr = k.dr.reduce((s, i) => s + i.wt, 0), tCr = k.cr.reduce((s, i) => s + i.wt, 0), tNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
-        const fine = ((tNet * 0.05) - (tDr - tCr)) * 0.91;
+        const netBal = tDr - tCr;
+        const fine = ((tNet * 0.05) - netBal) * 0.91;
         document.getElementById('dispDr').innerText = tDr.toFixed(3); document.getElementById('dispCr').innerText = tCr.toFixed(3);
-        document.getElementById('dispTotalNet').innerText = tNet.toFixed(1); document.getElementById('dispBal').innerText = (tDr - tCr).toFixed(3);
+        document.getElementById('dispTotalNet').innerText = tNet.toFixed(1); document.getElementById('dispBal').innerText = netBal.toFixed(3);
+        document.getElementById('dispFine').innerText = fine.toFixed(5);
         document.getElementById('dispRs').innerText = "₹" + Math.abs(Math.round(fine * r)).toLocaleString('en-IN');
     }
 
@@ -228,13 +228,8 @@
         let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">
             ${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}
             <h2 style="margin:5px 0; color:#d4af37;">GOPI JEWELLERS</h2>
-            <div style="margin-bottom:20px; border-bottom:2px solid #eee; padding-bottom:10px;">
-                <b>Karigar:</b> ${k.name} | <b>Phone:</b> ${k.phone} <br> <b>Address:</b> ${k.address}
-            </div>
-            <table style="width:100%; border-collapse:collapse; font-size:11px;">
-                <thead style="background:#f4f4f4;"><tr><th colspan="3" style="border:1px solid #ddd; padding:8px;">DR - ISSUE</th><th colspan="4" style="border:1px solid #ddd; padding:8px;">CR - JAMA</th></tr>
-                <tr><th style="border:1px solid #ddd; padding:5px;">Date</th><th style="border:1px solid #ddd; padding:5px;">Saman</th><th style="border:1px solid #ddd; padding:5px;">Wt</th><th style="border:1px solid #ddd; padding:5px;">Date</th><th style="border:1px solid #ddd; padding:5px;">Saman</th><th style="border:1px solid #ddd; padding:5px;">Wt</th><th style="border:1px solid #ddd; padding:5px;">Net</th></tr></thead>
-                <tbody>`;
+            <div style="margin-bottom:20px; border-bottom:2px solid #eee; padding-bottom:10px;"><b>Karigar:</b> ${k.name} | <b>Phone:</b> ${k.phone} <br> <b>Address:</b> ${k.address}</div>
+            <table style="width:100%; border-collapse:collapse; font-size:11px;"><thead style="background:#f4f4f4;"><tr><th colspan="3" style="border:1px solid #ddd; padding:8px;">DR - ISSUE</th><th colspan="4" style="border:1px solid #ddd; padding:8px;">CR - JAMA</th></tr><tr><th style="border:1px solid #ddd; padding:5px;">Date</th><th style="border:1px solid #ddd; padding:5px;">Saman</th><th style="border:1px solid #ddd; padding:5px;">Wt</th><th style="border:1px solid #ddd; padding:5px;">Date</th><th style="border:1px solid #ddd; padding:5px;">Saman</th><th style="border:1px solid #ddd; padding:5px;">Wt</th><th style="border:1px solid #ddd; padding:5px;">Net</th></tr></thead><tbody>`;
         const rows = Math.max(k.dr.length, k.cr.length);
         for (let i = 0; i < rows; i++) {
             pdfHTML += `<tr><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.saman||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3)||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.date||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.saman||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3)||'-'}</td><td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1)||'-'}</td></tr>`;
@@ -242,24 +237,9 @@
         pdfHTML += `</tbody></table><div style="margin-top:20px; text-align:right; font-size:14px; border-top:2px solid #d4af37; padding-top:10px;"><b>Settlement Amount: ${document.getElementById('dispRs').innerText}</b></div></div>`;
         html2pdf().from(pdfHTML).set({ margin: 10, filename: `${k.name}_Gold.pdf` }).save();
     }
-    function generateCashPDF() {
-        const k = masterData[currentId]; if(!k) return;
-        const logo = localStorage.getItem('shopLogo') || ''; let bal = 0;
-        let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">
-            ${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}
-            <h2 style="margin:5px 0; color:#1e3a8a;">GOPI JEWELLERS</h2>
-            <div style="margin-bottom:20px; border-bottom:2px solid #eee; padding-bottom:10px;"><b>Karigar:</b> ${k.name} | <b>Phone:</b> ${k.phone}</div>
-            <table style="width:100%; border-collapse:collapse; font-size:12px;"><thead style="background:#f4f4f4;"><tr><th>Date</th><th>Particular</th><th>Paid</th><th>Recd</th><th>Balance</th></tr></thead><tbody>`;
-        k.cash.forEach(c => { let p = c.type === 'Paid' ? c.amt : 0; let r = c.type === 'Recd' ? c.amt : 0; bal += (p - r); pdfHTML += `<tr><td style="border:1px solid #ddd; padding:8px;">${c.date}</td><td style="border:1px solid #ddd; padding:8px;">${c.part}</td><td style="color:red; border:1px solid #ddd;">${p||'-'}</td><td style="color:green; border:1px solid #ddd;">${r||'-'}</td><td style="font-weight:bold; border:1px solid #ddd;">₹${bal}</td></tr>`; });
-        pdfHTML += `</tbody></table><div style="margin-top:20px; text-align:right; font-size:16px;"><b>Final Balance: ₹${bal}</b></div></div>`;
-        html2pdf().from(pdfHTML).set({ margin: 10, filename: `${k.name}_Cash.pdf` }).save();
-    }
 
     function checkPass() { if(document.getElementById('passInput').value === SHOP_PASS) { openModule('main-menu'); loadFromServer(); } else alert("Wrong!"); }
-    function openModule(id) { 
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); 
-        setDates(); refreshUI();
-    }
+    function openModule(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); setDates(); refreshUI(); }
     function refreshUI() {
         const selG = document.getElementById('karigarSelector'), selC = document.getElementById('cashKarigarSelector');
         if(selG) { selG.innerHTML = ''; Object.keys(masterData).forEach(id => { if(id !== 'dailyEntries') selG.innerHTML += `<option value="${id}" ${id === currentId ? 'selected' : ''}>${masterData[id].name}</option>`; }); }
