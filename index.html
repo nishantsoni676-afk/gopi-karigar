@@ -12,25 +12,19 @@
         .page { display: none; flex-direction: column; padding: 10px; box-sizing: border-box; min-height: 100vh; }
         .page.active { display: flex; }
         .header { text-align: center; border-bottom: 3px solid var(--gold); padding-bottom: 8px; margin-bottom: 12px; }
-        
-        /* MENU PAGE STYLING */
         .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 25px; flex-grow: 1; align-content: center; }
         .menu-card { background: var(--dark); color: white; padding: 45px 20px; border-radius: 15px; text-align: center; border: 4px solid var(--gold); cursor: pointer; }
-        .menu-card h2 { margin: 10px 0 0; font-size: 26px; text-transform: uppercase; font-weight: 900; }
-
-        /* LEDGER UI (RESTORED TO ORIGINAL) */
+        .menu-card h2 { margin: 10px 0 0; font-size: 24px; text-transform: uppercase; font-weight: 900; }
         select, .btn-nav { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: 900; margin-bottom: 8px; font-size: 18px; cursor: pointer; }
         .btn-nav { background: var(--gold); color: var(--dark); text-transform: uppercase; }
         .input-card { padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 2px solid #ddd; }
         .dr-card { border-left: 10px solid var(--debit-red); background: #fffafa; }
         .cr-card { border-left: 10px solid var(--credit-green); background: #fafffa; }
         input { width: 100%; padding: 15px; border: 2px solid #ccc; border-radius: 6px; font-size: 18px; font-weight: bold; box-sizing: border-box; margin-top: 5px; }
-        
         .table-wrap { flex-grow: 1; min-height: 450px; overflow: auto; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; min-width: 650px; font-size: 16px; font-weight: bold; }
         th { position: sticky; top: 0; background: #eee; z-index: 10; border-bottom: 3px solid #ddd; padding: 12px; font-size: 14px; }
         td { padding: 12px; text-align: center; border: 1px solid #ddd; }
-        
         .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 16px; font-weight: bold; }
         .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
         .stat-card { background: var(--dark); color: white; padding: 15px; border-radius: 8px; text-align: center; }
@@ -39,14 +33,13 @@
         .amount-card { background: var(--navy); border: 3px solid var(--gold); }
         .amount-card div { font-size: 36px; }
         .btn-footer { width: 100%; padding: 20px; border: none; border-radius: 10px; font-weight: 900; color: white; margin-top: 10px; font-size: 20px; cursor: pointer; }
-        
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="login-screen" class="page active" style="justify-content:center; align-items:center; text-align:center;">
+    <div id="login-screen" class="page active" style="justify-content: center; align-items: center; text-align: center;">
         <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:120px; margin-bottom: 20px;">
         <h1>Gopi Jewellers</h1>
         <input type="password" id="passInput" placeholder="Password" style="text-align:center; width: 80%;">
@@ -58,12 +51,11 @@
         <div class="menu-grid">
             <div class="menu-card" onclick="openModule('jobwork-page')">⚖️<h2>Karigar Jobwork</h2></div>
             <div class="menu-card" onclick="openModule('cash-page')">💸<h2>Karigar Cash</h2></div>
-            <div class="menu-card" onclick="openModule('cust-page')" style="background:var(--navy);">👤<h2>Add Customer</h2></div>
         </div>
     </div>
 
     <div id="jobwork-page" class="page">
-        <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO DASHBOARD</button>
+        <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
         <div class="header"><img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;"><div id="syncStatus" style="font-size:12px; color:#888; font-weight:900;">☁ CONNECTED</div></div>
         
         <select id="karigarSelectorGold" onchange="switchKarigar(this.value)"></select>
@@ -104,7 +96,7 @@
     </div>
 
     <div id="cash-page" class="page">
-        <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO DASHBOARD</button>
+        <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
         <div class="header"><h3>CASH LEDGER</h3></div>
         <select id="karigarSelectorCash" onchange="switchKarigar(this.value)"></select>
 
@@ -121,138 +113,144 @@
         </div>
         <div class="summary"><div class="stat-card full-width-card amount-card" style="background:var(--dark);"><small>CURRENT BALANCE</small><div id="dispRsCash">₹0</div></div></div>
     </div>
-
-    <div id="cust-page" class="page">
-        <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO DASHBOARD</button>
-        <div class="header"><h3>CUSTOMER DIRECTORY</h3></div>
-        <div class="input-card">
-            <input type="text" id="custName" placeholder="Name">
-            <input type="text" id="custPhone" placeholder="Phone">
-            <input type="text" id="custAddr" placeholder="City">
-            <button class="btn-footer" style="background:var(--credit-green);" onclick="addCustomer()">SAVE CUSTOMER</button>
-        </div>
-        <div class="table-wrap">
-            <table style="min-width: 100%;">
-                <thead><tr><th>Name</th><th>Phone</th><th>Action</th></tr></thead>
-                <tbody id="custListBody"></tbody>
-            </table>
-        </div>
-    </div>
 </div>
 
-<div id="modal"><div style="background:white; padding:25px; border-radius:12px; width:95%; max-width:400px; text-align:center;"><h2>New Karigar</h2><input type="text" id="newName" placeholder="Name"><button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">SAVE</button><button class="btn-footer" style="background:#999;" onclick="hideModal()">CANCEL</button></div></div>
+<div id="modal">
+    <div style="background:white; padding:25px; border-radius:12px; width:95%; max-width:400px; text-align:center;">
+        <h2>Register Karigar</h2>
+        <input type="text" id="newName" placeholder="Karigar Name">
+        <button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">SAVE</button>
+        <button class="btn-footer" style="background:#999;" onclick="hideModal()">CANCEL</button>
+    </div>
+</div>
 
 <script>
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx0G79ae_2xJR8kBKE2CxjL_62qOUv0_BqzzmTN5YhopZ61XTg0F499a8QvQ3cTpGjcXw/exec";
     const SHOP_PASS = "1234";
-    let masterData = { karigars: {}, customers: {} };
-    let activeId = "";
+    let masterData = {};
+    let currentId = "";
 
-    function checkPass() { if(document.getElementById('passInput').value === SHOP_PASS) { openModule('main-menu'); loadFromServer(); } else alert("Wrong Password!"); }
-    function openModule(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-    function showModal() { document.getElementById('modal').style.display = 'flex'; }
-    function hideModal() { document.getElementById('modal').style.display = 'none'; }
+    function checkPass() {
+        if(document.getElementById('passInput').value === SHOP_PASS) {
+            openModule('main-menu');
+            loadFromServer();
+        } else { alert("Wrong Password!"); }
+    }
+
+    function openModule(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
 
     async function loadFromServer() {
         try {
-            const r = await fetch(CLOUD_URL); const t = await r.text();
-            const cloudData = t.trim() ? JSON.parse(t) : {};
-            if(cloudData.karigars) masterData.karigars = cloudData.karigars;
-            if(cloudData.customers) masterData.customers = cloudData.customers;
-            activeId = localStorage.getItem('gopi_active_id') || Object.keys(masterData.karigars)[0] || "";
+            const response = await fetch(CLOUD_URL);
+            const text = await response.text();
+            masterData = text.trim() ? JSON.parse(text) : {};
+            currentId = localStorage.getItem('gopi_active_id') || Object.keys(masterData)[0] || "";
             refreshUI();
-        } catch (e) { masterData = JSON.parse(localStorage.getItem('gopi_master_cloud')) || masterData; refreshUI(); }
+        } catch (err) { masterData = JSON.parse(localStorage.getItem('gopi_master_cloud')) || {}; refreshUI(); }
     }
 
     function saveData() {
         localStorage.setItem('gopi_master_cloud', JSON.stringify(masterData));
+        localStorage.setItem('gopi_active_id', currentId);
         fetch(CLOUD_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(masterData) });
     }
+
+    function showModal() { document.getElementById('modal').style.display = 'flex'; }
+    function hideModal() { document.getElementById('modal').style.display = 'none'; }
 
     function refreshUI() {
         const selG = document.getElementById('karigarSelectorGold'), selC = document.getElementById('karigarSelectorCash');
         selG.innerHTML = ''; selC.innerHTML = '';
-        Object.keys(masterData.karigars).forEach(id => {
-            const opt = `<option value="${id}" ${id === activeId ? 'selected' : ''}>${masterData.karigars[id].name}</option>`;
+        Object.keys(masterData).forEach(id => {
+            const opt = `<option value="${id}" ${id === currentId ? 'selected' : ''}>${masterData[id].name}</option>`;
             selG.innerHTML += opt; selC.innerHTML += opt;
-        });
-        const cBody = document.getElementById('custListBody'); cBody.innerHTML = '';
-        Object.keys(masterData.customers).forEach(id => {
-            const c = masterData.customers[id];
-            cBody.innerHTML += `<tr><td>${c.name}</td><td>${c.phone}</td><td><button onclick="delCust('${id}')" class="btn-del-row">x</button></td></tr>`;
         });
         renderGold(); renderCash();
     }
 
-    function addCustomer() {
-        const name = document.getElementById('custName').value; if(!name) return;
-        masterData.customers["C_"+Date.now()] = { name, phone: document.getElementById('custPhone').value, addr: document.getElementById('custAddr').value };
-        saveData(); refreshUI();
-        document.getElementById('custName').value = ''; document.getElementById('custPhone').value = '';
-    }
-    function delCust(id) { if(confirm("Delete?")) { delete masterData.customers[id]; saveData(); refreshUI(); } }
+    function switchKarigar(id) { currentId = id; localStorage.setItem('gopi_active_id', id); renderGold(); renderCash(); }
 
-    /* RESTORED JOBWORK LOGIC */
-    function switchKarigar(id) { activeId = id; localStorage.setItem('gopi_active_id', id); renderGold(); renderCash(); }
-    function registerKarigar() { 
-        const name = document.getElementById('newName').value; if(!name) return;
-        const id = "K_" + Date.now(); masterData.karigars[id] = { name, dr: [], cr: [], cash: [] };
-        activeId = id; saveData(); hideModal(); refreshUI();
+    function registerKarigar() {
+        const name = document.getElementById('newName').value; if (!name) return;
+        const id = "K_" + Date.now();
+        masterData[id] = { name, dr: [], cr: [], cash: [] };
+        currentId = id; saveData(); hideModal(); refreshUI();
     }
+
     function addEntry(type) {
-        if(!activeId) return;
-        const val = parseFloat(document.getElementById(type + 'Wt').value); if (isNaN(val)) return;
-        let entry = { date: document.getElementById(type + 'Date').value, saman: document.getElementById(type + 'Saman').value, val: val };
+        if(!currentId) return;
+        const val = parseFloat(document.getElementById(type + 'Wt').value);
+        if (isNaN(val)) return alert("Enter weight");
+        let entry = { 
+            date: document.getElementById(type + 'Date').value, 
+            saman: document.getElementById(type + 'Saman').value, 
+            val: val 
+        };
         if (type === 'cr') entry.rounded = val < 1 ? 0 : ((val % 1 < 0.35) ? Math.floor(val) : (val % 1 < 0.9 ? Math.floor(val) + 0.5 : Math.floor(val) + 1));
-        masterData.karigars[activeId][type].push(entry); saveData(); renderGold();
+        masterData[currentId][type].push(entry);
+        saveData(); renderGold();
         document.getElementById(type + 'Wt').value = '';
     }
+
     function addCashEntry() {
-        if(!activeId) return;
-        const amt = parseFloat(document.getElementById('cashAmt').value); if(isNaN(amt)) return;
-        let k = masterData.karigars[activeId]; if(!k.cash) k.cash = [];
+        if(!currentId) return;
+        const amt = parseFloat(document.getElementById('cashAmt').value);
+        if (isNaN(amt)) return alert("Enter amount");
+        let k = masterData[currentId]; if(!k.cash) k.cash = [];
         let lastBal = k.cash.length > 0 ? k.cash[k.cash.length - 1].bal : 0;
         k.cash.push({ date: document.getElementById('cashDate').value, part: document.getElementById('cashPart').value, amt: amt, bal: lastBal + amt });
         saveData(); renderCash();
         document.getElementById('cashAmt').value = '';
     }
+
     function renderGold() {
         const body = document.getElementById('ledgerBodyGold'); body.innerHTML = '';
-        let k = masterData.karigars[activeId]; if(!k) return;
+        let k = masterData[currentId]; if(!k) return;
         const rows = Math.max(k.dr.length, k.cr.length);
         for (let i = 0; i < rows; i++) {
             const dr = k.dr[i], cr = k.cr[i];
-            body.innerHTML += `<tr><td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td><td style="background:#fffafa;">${dr?dr.val.toFixed(3):'-'} ${dr ? `<button class="btn-del-row" onclick="delRow('dr', ${i})">x</button>` : ''}</td><td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td><td style="background:#fafffa;">${cr?cr.val.toFixed(3):'-'} ${cr ? `<button class="btn-del-row" onclick="delRow('cr', ${i})">x</button>` : ''}</td><td>${cr?cr.rounded.toFixed(1):'-'}</td></tr>`;
+            body.innerHTML += `<tr>
+                <td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td>
+                <td style="background:#fffafa;">${dr?dr.val.toFixed(3):'-'} ${dr ? `<button class="btn-del-row" onclick="deleteRow('dr', ${i})">x</button>` : ''}</td>
+                <td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td>
+                <td style="background:#fafffa;">${cr?cr.val.toFixed(3):'-'} ${cr ? `<button class="btn-del-row" onclick="deleteRow('cr', ${i})">x</button>` : ''}</td>
+                <td>${cr?cr.rounded.toFixed(1):'-'}</td>
+            </tr>`;
         }
         calculateGold();
     }
+
     function calculateGold() {
-        let k = masterData.karigars[activeId]; if(!k) return;
-        let r = parseFloat(document.getElementById('rate').value)||0;
-        const tDr = k.dr.reduce((s,i)=>s+i.val,0), tCr = k.cr.reduce((s,i)=>s+i.val,0), tNet = k.cr.reduce((s,i)=>s+(i.rounded||0),0);
-        const fine = ((tNet*0.05)-(tDr-tCr))*0.91;
+        let k = masterData[currentId]; if(!k) return;
+        let r = parseFloat(document.getElementById('rate').value) || 0;
+        const tDr = k.dr.reduce((s, i) => s + i.val, 0), tCr = k.cr.reduce((s, i) => s + i.val, 0), tNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
+        const fine = ((tNet * 0.05) - (tDr - tCr)) * 0.91;
         document.getElementById('dispDrGold').innerText = tDr.toFixed(3);
         document.getElementById('dispCrGold').innerText = tCr.toFixed(3);
-        document.getElementById('dispBalGold').innerText = (tDr - tCr).toFixed(3);
-        document.getElementById('dispRsGold').innerText = "₹"+Math.abs(Math.round(fine*r)).toLocaleString('en-IN');
+        document.getElementById('dispRsGold').innerText = "₹" + Math.abs(Math.round(fine * r)).toLocaleString('en-IN');
     }
+
     function renderCash() {
         const body = document.getElementById('ledgerBodyCash'); body.innerHTML = '';
-        let k = masterData.karigars[activeId]; if(!k || !k.cash) return;
-        k.cash.forEach((item, i) => { body.innerHTML += `<tr><td>${item.date}</td><td>${item.part}</td><td>₹${item.amt}</td><td>₹${item.bal}</td><td><button class="btn-del-row" onclick="delCashRow(${i})">x</button></td></tr>`; });
+        let k = masterData[currentId]; if(!k || !k.cash) return;
+        k.cash.forEach((item, i) => { body.innerHTML += `<tr><td>${item.date}</td><td>${item.part}</td><td>₹${item.amt}</td><td>₹${item.bal}</td><td><button class="btn-del-row" onclick="deleteCashRow(${i})">x</button></td></tr>`; });
         document.getElementById('dispRsCash').innerText = "₹" + (k.cash.length > 0 ? k.cash[k.cash.length - 1].bal.toLocaleString() : "0");
     }
-    function delRow(type, i) { if(confirm("Delete?")) { masterData.karigars[activeId][type].splice(i, 1); saveData(); renderGold(); } }
-    function delCashRow(i) { if(confirm("Delete?")) { masterData.karigars[activeId].cash.splice(i, 1); let rb = 0; masterData.karigars[activeId].cash.forEach(item => { item.bal = rb + item.amt; rb = item.bal; }); saveData(); renderCash(); } }
-    function deleteKarigar() { if(confirm("Delete Profile?")) { delete masterData.karigars[activeId]; activeId = Object.keys(masterData.karigars)[0] || ""; saveData(); refreshUI(); openModule('main-menu'); } }
-    
+
+    function deleteRow(type, i) { if(confirm("Delete?")) { masterData[currentId][type].splice(i, 1); saveData(); renderGold(); } }
+    function deleteCashRow(i) { if(confirm("Delete?")) { masterData[currentId].cash.splice(i, 1); let rb = 0; masterData[currentId].cash.forEach(item => { item.bal = rb + item.amt; rb = item.bal; }); saveData(); renderCash(); } }
+    function deleteKarigar() { if(confirm("Delete Profile?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); openModule('main-menu'); } }
+
     function generatePDF() {
-        const k = masterData.karigars[activeId];
+        const k = masterData[currentId];
         let html = `<div style="padding:20px;text-align:center;"><h2>GOPI JEWELLERS</h2><h3>Karigar: ${k.name}</h3><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#eee;"><th>Dr Date</th><th>Dr Wt</th><th>Cr Date</th><th>Cr Wt</th><th>Net</th></tr></thead><tbody>`;
         const rows = Math.max(k.dr.length, k.cr.length);
         for(let i=0; i<rows; i++) html += `<tr><td>${k.dr[i]?.date||'-'}</td><td>${k.dr[i]?.val.toFixed(3)||'-'}</td><td>${k.cr[i]?.date||'-'}</td><td>${k.cr[i]?.val.toFixed(3)||'-'}</td><td>${k.cr[i]?.rounded.toFixed(1)||'-'}</td></tr>`;
         html += `</tbody></table><h3>Total Settlement: ${document.getElementById('dispRsGold').innerText}</h3></div>`;
-        html2pdf().from(html).save(`${k.name}_Gold_Slip.pdf`);
+        html2pdf().from(html).save(`${k.name}_Slip.pdf`);
     }
 </script>
 </body>
