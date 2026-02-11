@@ -84,7 +84,9 @@
             <label style="font-size:18px; font-weight:900;">GOLD RATE:</label>
             <input type="number" id="rate" oninput="calculate()" placeholder="₹ Rate" style="width: 60%; margin-bottom: 0;">
         </div>
+
         <div class="table-wrap"><table><thead id="ledgerHeader"></thead><tbody id="ledgerBody"></tbody></table></div>
+
         <div class="summary">
             <div class="stat-card"><small>TOTAL DR</small><div id="dispDr">0.000</div></div>
             <div class="stat-card"><small>TOTAL CR</small><div id="dispCr">0.000</div></div>
@@ -93,6 +95,7 @@
             <div class="stat-card full-width-card" style="background:#2c3e50"><small>KAM FINE (91.00)</small><div id="dispNet">0.00000</div></div>
             <div class="stat-card full-width-card amount-card"><small>SETTLEMENT AMOUNT</small><div id="dispRs">₹0</div></div>
         </div>
+        <button class="btn-footer" style="background:#e74c3c; margin-bottom:30px;" onclick="deleteKarigar()">DELETE PROFILE</button>
     </div>
 
     <div id="cash-page" class="page">
@@ -121,6 +124,8 @@
         <button class="btn-footer" style="background:#999;" onclick="hideEditModal()">CANCEL</button>
     </div>
 </div>
+
+<div id="modal"><div style="background:white; padding:25px; border-radius:12px; width:90%; max-width:400px; text-align:center;"><h2>Register Karigar</h2><input type="text" id="newName" placeholder="Name"><button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">SAVE</button><button class="btn-footer" style="background:#999;" onclick="hideModal()">CANCEL</button></div></div>
 
 <script>
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx0G79ae_2xJR8kBKE2CxjL_62qOUv0_BqzzmTN5YhopZ61XTg0F499a8QvQ3cTpGjcXw/exec";
@@ -189,7 +194,9 @@
     }
 
     function renderTable() {
-        document.getElementById('ledgerHeader').innerHTML = `<tr><th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th><th colspan="4" style="color:var(--credit-green)">CR - JAMA</th></tr><tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Wt</th><th>Net</th></tr>`;
+        const header = document.getElementById('ledgerHeader');
+        if(header) header.innerHTML = `<tr><th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th><th colspan="4" style="color:var(--credit-green)">CR - JAMA</th></tr>
+                            <tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Wt</th><th>Net</th></tr>`;
         const body = document.getElementById('ledgerBody'); body.innerHTML = '';
         let k = masterData[currentId]; if(!k) return;
         const rows = Math.max(k.dr.length, k.cr.length);
@@ -245,12 +252,11 @@
     function switchCashKarigar() { currentId = document.getElementById('cashKarigarSelector').value; refreshUI(); }
     function deleteRow(t, i) { if(confirm("Delete?")) { masterData[currentId][t].splice(i, 1); saveData(); renderTable(); } }
     function deleteCash(i) { if(confirm("Delete?")) { masterData[currentId].cash.splice(i, 1); saveData(); renderCashTable(); } }
-    function deleteKarigar() { if(confirm("Delete?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); openModule('main-menu'); } }
+    function deleteKarigar() { if(confirm("Delete Profile?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); openModule('main-menu'); } }
     function showModal() { document.getElementById('modal').style.display = 'flex'; }
     function hideModal() { document.getElementById('modal').style.display = 'none'; }
     function registerKarigar() { const n = document.getElementById('newName').value; if(n) { const id = "K_"+Date.now(); masterData[id]={name:n,dr:[],cr:[],cash:[]}; currentId=id; saveData(); hideModal(); refreshUI(); } }
 </script>
 
-<div id="modal"><div style="background:white; padding:25px; border-radius:12px; width:90%; max-width:400px; text-align:center;"><h2>Register Karigar</h2><input type="text" id="newName" placeholder="Name"><button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">SAVE</button><button class="btn-footer" style="background:#999;" onclick="hideModal()">CANCEL</button></div></div>
 </body>
 </html>
