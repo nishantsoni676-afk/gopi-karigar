@@ -14,7 +14,6 @@
         .header { text-align: center; border-bottom: 3px solid var(--gold); padding-bottom: 8px; margin-bottom: 12px; }
         .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 25px; flex-grow: 1; align-content: center; }
         .menu-card { background: var(--dark); color: white; padding: 40px 20px; border-radius: 15px; text-align: center; border: 3px solid var(--gold); cursor: pointer; }
-        .menu-card h2 { margin: 10px 0 0; font-size: 24px; text-transform: uppercase; font-weight: 900; }
         input, select, .btn-nav { width: 100%; padding: 15px; border-radius: 8px; border: 2px solid #ccc; font-weight: bold; margin-bottom: 8px; font-size: 16px; box-sizing: border-box; }
         .btn-nav { background: var(--gold); color: var(--dark); text-transform: uppercase; border: none; cursor: pointer; }
         .btn-footer { width: 100%; padding: 20px; border: none; border-radius: 10px; font-weight: 900; color: white; margin-top: 10px; font-size: 20px; cursor: pointer; }
@@ -109,7 +108,11 @@
         <h2 style="margin-top:0;">Edit Entry</h2>
         <input type="text" id="editDate" placeholder="Date">
         <input type="text" id="editSaman" placeholder="Particular">
-        <input type="number" id="editVal" step="0.001" placeholder="Value">
+        <input type="number" id="editVal" step="0.001" placeholder="Weight/Amount">
+        <div id="netEditSection" style="display:none;">
+            <label style="font-size: 12px; color: #666;">Manual Net (Rounded):</label>
+            <input type="number" id="editNet" step="0.1" placeholder="Manual Net">
+        </div>
         <div id="editTypeSection" style="display:none;"><select id="editCashType"><option value="Paid">PAID</option><option value="Recd">RECD</option></select></div>
         <button class="btn-footer" style="background:var(--credit-green);" onclick="saveEdit()">UPDATE</button>
         <button class="btn-footer" style="background:#999;" onclick="hideEditModal()">CANCEL</button>
@@ -207,10 +210,17 @@
     function openEdit(module, index) {
         editingRef = { module, index }; const entry = masterData[currentId][module][index];
         document.getElementById('editDate').value = entry.date;
-        document.getElementById('editSaman').value = module === 'cash' ? entry.part : entry.saman;
-        document.getElementById('editVal').value = module === 'cash' ? entry.amt : entry.wt;
-        document.getElementById('editTypeSection').style.display = module === 'cash' ? 'block' : 'none';
+        document.getElementById('editSaman').value = (module === 'cash') ? entry.part : entry.saman;
+        document.getElementById('editVal').value = (module === 'cash') ? entry.amt : entry.wt;
+        
+        // Net Edit Visibility
+        document.getElementById('netEditSection').style.display = (module === 'cr') ? 'block' : 'none';
+        if(module === 'cr') document.getElementById('editNet').value = entry.rounded;
+        
+        // Cash Type Visibility
+        document.getElementById('editTypeSection').style.display = (module === 'cash') ? 'block' : 'none';
         if(module === 'cash') document.getElementById('editCashType').value = entry.type;
+        
         document.getElementById('editModal').style.display = 'flex';
     }
 
@@ -218,7 +228,17 @@
         const { module, index } = editingRef; const entry = masterData[currentId][module][index];
         entry.date = document.getElementById('editDate').value; const val = parseFloat(document.getElementById('editVal').value);
         if(module === 'cash') { entry.part = document.getElementById('editSaman').value; entry.amt = val; entry.type = document.getElementById('editCashType').value; }
-        else { entry.saman = document.getElementById('editSaman').value; entry.wt = val; if(module === 'cr') { let d = parseFloat((val - Math.floor(val)).toFixed(2)); entry.rounded = (val < 1) ? 0 : (d < 0.35 ? Math.floor(val) : (d < 0.9 ? Math.floor(val) + 0.5 : Math.floor(val) + 1)); } }
+        else { 
+            entry.saman = document.getElementById('editSaman').value; entry.wt = val; 
+            if(module === 'cr') {
+                const manualNet = parseFloat(document.getElementById('editNet').value);
+                // If manual net is different from auto-calc, use manual
+                entry.rounded = isNaN(manualNet) ? (() => { 
+                    let d = parseFloat((val - Math.floor(val)).toFixed(2)); 
+                    return (val < 1) ? 0 : (d < 0.35 ? Math.floor(val) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(val) + 1)); 
+                })() : manualNet;
+            } 
+        }
         saveData(); document.getElementById('editModal').style.display = 'none'; refreshUI();
     }
 
