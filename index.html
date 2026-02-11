@@ -16,34 +16,32 @@
         .input-card { padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #ddd; }
         .dr-card { border-left: 8px solid var(--debit-red); background: #fff5f5; }
         .cr-card { border-left: 8px solid var(--credit-green); background: #f5fff5; }
-        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; box-sizing: border-box; margin-top: 5px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; box-sizing: border-box; margin-top: 5px; }
         .table-wrap { overflow-x: auto; margin: 15px 0; border: 1px solid #eee; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; min-width: 600px; font-size: 12px; }
         th { background: #f8f9fa; padding: 10px; border: 1px solid #ddd; font-size: 11px; }
         td { padding: 8px; text-align: center; border: 1px solid #f0f0f0; }
         .editable:hover { background: #e8f0fe; cursor: pointer; }
         .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold; }
-        
         .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .stat-card { background: var(--dark); color: white; padding: 12px; border-radius: 8px; text-align: center; }
         .stat-card div { font-size: 16px; font-weight: bold; color: var(--gold); margin-top: 5px; }
         .highlight-net { background: #2c3e50; border: 1px solid var(--gold); }
-        
         .amount-card { grid-column: span 2; background: var(--navy); padding: 20px; border: 2px solid var(--gold); }
         .amount-card div { color: var(--gold) !important; font-size: 28px; font-weight: bold; }
-        
         .btn-footer { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; margin-top: 10px; }
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
-        #login-screen { text-align: center; padding-top: 50px; }
+        #login-screen { text-align: center; padding: 50px 20px; }
     </style>
 </head>
 <body>
 
 <div id="login-screen" class="container">
-    <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:80px;">
+    <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:100px; margin-bottom: 20px;">
     <h2>Gopi Jewellers</h2>
-    <input type="password" id="passInput" placeholder="Password">
-    <button class="btn-footer" style="background:var(--gold); color:var(--dark);" onclick="checkPass()">Login</button>
+    <p>Enter Shop Password</p>
+    <input type="password" id="passInput" placeholder="Enter Password" autofocus>
+    <button class="btn-footer" style="background:var(--gold); color:var(--dark);" onclick="checkPass()">LOGIN</button>
 </div>
 
 <div id="app-content" class="container" style="display:none;">
@@ -128,11 +126,15 @@
     let currentId = "";
 
     function checkPass() {
-        if(document.getElementById('passInput').value === SHOP_PASS) {
+        const input = document.getElementById('passInput').value;
+        console.log("Checking password...");
+        if(input === SHOP_PASS) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-content').style.display = 'block';
             loadFromServer();
-        } else { alert("Wrong Password!"); }
+        } else { 
+            alert("Wrong Password! Please try 1234"); 
+        }
     }
 
     async function loadFromServer() {
@@ -254,4 +256,41 @@
 
     function refreshUI() {
         const selector = document.getElementById('karigarSelector');
-        selector.innerHTML
+        selector.innerHTML = '';
+        Object.keys(masterData).forEach(id => {
+            let opt = document.createElement('option');
+            opt.value = id; opt.innerHTML = masterData[id].name;
+            if(id === currentId) opt.selected = true;
+            selector.appendChild(opt);
+        });
+        renderTable();
+    }
+
+    function switchKarigar() { currentId = document.getElementById('karigarSelector').value; localStorage.setItem('gopi_active_id', currentId); refreshUI(); }
+    function deleteKarigar() { if(confirm("Permanently delete this Karigar?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); } }
+
+    function generatePDF() {
+        const k = masterData[currentId];
+        let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">
+            <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;">
+            <h2>GOPI JEWELLERS</h2>
+            <p>Karigar: ${k.name} | Rate: ₹${k.rate}</p>
+            <table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;">
+                <tr style="background:#eee;"><th>Date</th><th>Dr Wt</th><th>Total Cr</th><th>Net</th></tr>`;
+        const rows = Math.max(k.dr.length, k.cr.length);
+        for (let i = 0; i < rows; i++) {
+            pdfHTML += `<tr>
+                <td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date || k.cr[i]?.date || '-'}</td>
+                <td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3) || '-'}</td>
+                <td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3) || '-'}</td>
+                <td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1) || '-'}</td>
+            </tr>`;
+        }
+        pdfHTML += `</table><div style="background:#1e3a8a; color:#d4af37; padding:15px; margin-top:20px; border-radius:10px;">
+            <h3>Total Settlement: ${document.getElementById('dispRs').innerText}</h3>
+        </div></div>`;
+        html2pdf().from(pdfHTML).save(`${k.name}_Gopi_Jewellers.pdf`);
+    }
+</script>
+</body>
+</html>
