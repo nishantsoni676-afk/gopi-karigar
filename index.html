@@ -1,1 +1,341 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gopi Jewellers ERP</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root { --gold: #d4af37; --dark: #1a1a1a; --debit-red: #e74c3c; --credit-green: #27ae60; --navy: #1e3a8a; }
+        html, body { height: 100%; margin: 0; padding: 0; background: #f0f2f5; font-family: -apple-system, sans-serif; }
+        .container { background: white; width: 100%; min-height: 100vh; display: flex; flex-direction: column; box-sizing: border-box; }
+        
+        /* MENU PAGE STYLING */
+        .menu-grid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 25px; flex-grow: 1; align-content: center; }
+        .menu-card { background: var(--dark); color: white; padding: 40px 20px; border-radius: 15px; text-align: center; border: 3px solid var(--gold); cursor: pointer; }
+        .menu-card h2 { margin: 10px 0 0; font-size: 24px; text-transform: uppercase; }
+
+        /* LEDGER PAGE STYLING */
+        .page { display: none; flex-direction: column; padding: 10px; box-sizing: border-box; min-height: 100vh; }
+        .page.active { display: flex; }
+        .header { text-align: center; border-bottom: 3px solid var(--gold); padding-bottom: 8px; margin-bottom: 12px; }
+        
+        select, .btn-nav { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: 900; margin-bottom: 8px; font-size: 18px; cursor: pointer; }
+        .btn-nav { background: var(--gold); color: var(--dark); text-transform: uppercase; }
+        
+        .input-card { padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 2px solid #ddd; }
+        .dr-card { border-left: 10px solid var(--debit-red); background: #fffafa; }
+        .cr-card { border-left: 10px solid var(--credit-green); background: #fafffa; }
+        
+        input { width: 100%; padding: 15px; border: 2px solid #ccc; border-radius: 6px; font-size: 18px; font-weight: bold; box-sizing: border-box; margin-top: 5px; }
+        
+        .table-wrap { flex-grow: 1; min-height: 400px; overflow: auto; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; font-size: 16px; font-weight: bold; }
+        th { position: sticky; top: 0; background: #eee; z-index: 10; border-bottom: 3px solid #ddd; padding: 12px; font-size: 14px; }
+        td { padding: 12px; text-align: center; border: 1px solid #ddd; }
+        
+        .btn-del-row { background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-size: 16px; font-weight: bold; }
+
+        .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
+        .stat-card { background: var(--dark); color: white; padding: 15px; border-radius: 8px; text-align: center; }
+        .stat-card div { font-size: 22px; font-weight: 900; color: var(--gold); }
+        .full-width-card { grid-column: span 2; padding: 18px; border: 2px solid var(--gold); }
+        .fine-card { background: #2c3e50; }
+        .amount-card { background: var(--navy); border: 3px solid var(--gold); }
+        .amount-card div { font-size: 36px; }
+
+        .btn-footer { width: 100%; padding: 20px; border: none; border-radius: 10px; font-weight: 900; color: white; margin-top: 10px; font-size: 20px; cursor: pointer; }
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="login-screen" class="page active" style="justify-content: center; align-items: center; text-align: center;">
+        <img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:120px; margin-bottom: 20px;">
+        <h1>Gopi Jewellers</h1>
+        <input type="password" id="passInput" placeholder="Password" style="text-align:center; width: 80%;">
+        <button class="btn-footer" style="background:var(--gold); color:var(--dark); width: 80%;" onclick="checkPass()">LOGIN</button>
+    </div>
+
+    <div id="main-menu" class="page">
+        <div class="header"><h2>Control Panel</h2></div>
+        <div class="menu-grid">
+            <div class="menu-card" onclick="openModule('jobwork-page')">
+                <span style="font-size: 50px;">⚖️</span>
+                <h2>Karigar Jobwork</h2>
+            </div>
+            <div class="menu-card" onclick="openModule('cash-page')">
+                <span style="font-size: 50px;">💸</span>
+                <h2>Karigar Cash</h2>
+            </div>
+        </div>
+    </div>
+
+    <div id="jobwork-page" class="page">
+        <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
+        <div class="header"><img src="https://i.postimg.cc/85zKzX68/1000207262.png" style="width:60px;"><div id="syncStatus" style="font-size:12px; color:#888; font-weight:900;">☁ CONNECTED</div></div>
+        
+        <select id="karigarSelector" onchange="switchKarigar()"></select>
+        <button class="btn-nav" onclick="showModal()">+ NEW REGISTRATION</button>
+        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generatePDF()">📄 DOWNLOAD PDF SLIP</button>
+
+        <div class="input-card dr-card">
+            <div style="display:flex; gap:5px;"><input type="text" id="drDate" placeholder="Date"><input type="text" id="drSaman" placeholder="Saman"><input type="number" id="drWt" step="0.001" placeholder="Wt"></div>
+            <button class="btn-footer" style="background:var(--debit-red);" onclick="addEntry('Dr')">ADD ISSUE (DR)</button>
+        </div>
+
+        <div class="input-card cr-card">
+            <div style="display:flex; gap:5px;"><input type="text" id="crDate" placeholder="Date"><input type="text" id="crSaman" placeholder="Saman"><input type="number" id="crWt" step="0.001" placeholder="Wt"></div>
+            <button class="btn-footer" style="background:var(--credit-green);" onclick="addEntry('Cr')">ADD JAMA (CR)</button>
+        </div>
+
+        <div style="padding:15px; background:#eee; border-radius:10px; display: flex; align-items: center; justify-content: space-between;">
+            <label style="font-size:18px; font-weight:900;">GOLD RATE:</label>
+            <input type="number" id="rate" oninput="calculate()" placeholder="₹ Rate" style="width: 60%; margin-top: 0;">
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th><th colspan="4" style="color:var(--credit-green)">CR - JAMA</th></tr>
+                    <tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Total Cr</th><th>Net</th></tr>
+                </thead>
+                <tbody id="ledgerBody"></tbody>
+            </table>
+        </div>
+
+        <div class="summary">
+            <div class="stat-card"><small>TOTAL DR</small><div id="dispDr">0.000</div></div>
+            <div class="stat-card"><small>TOTAL CR</small><div id="dispCr">0.000</div></div>
+            <div class="stat-card"><small>TOTAL NET</small><div id="dispTotalNet">0.0</div></div>
+            <div class="stat-card"><small>BALANCE</small><div id="dispBal">0.000</div></div>
+            <div class="stat-card full-width-card fine-card"><small>KAM FINE (91.00)</small><div id="dispNet">0.00000</div></div>
+            <div class="stat-card full-width-card amount-card"><small>SETTLEMENT AMOUNT</small><div id="dispRs">₹0</div></div>
+        </div>
+        <button class="btn-footer" style="background:#e74c3c; margin-bottom:30px;" onclick="deleteKarigar()">DELETE PROFILE</button>
+    </div>
+
+    <div id="cash-page" class="page">
+        <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
+        <div class="header"><h2>Karigar Cash</h2></div>
+        
+        <select id="cashKarigarSelector" onchange="switchCashKarigar()"></select>
+
+        <div class="input-card" style="border-top: 5px solid var(--navy);">
+            <div style="display:flex; gap:5px;"><input type="text" id="cashDate" placeholder="Date"><input type="text" id="cashPart" placeholder="Particular (GPay/Cash)"></div>
+            <div style="display:flex; gap:5px; margin-top:5px;">
+                <input type="number" id="cashAmt" placeholder="Amount ₹">
+                <select id="cashType" style="margin-bottom:0; width:40%;">
+                    <option value="Paid">PAID</option>
+                    <option value="Recd">RECD</option>
+                </select>
+            </div>
+            <button class="btn-footer" style="background:var(--navy);" onclick="addCashEntry()">SAVE CASH ENTRY</button>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Particular</th>
+                        <th style="color:var(--debit-red)">Paid</th>
+                        <th style="color:var(--credit-green)">Recd</th>
+                        <th>Balance</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="cashTableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="summary">
+            <div class="stat-card full-width-card amount-card">
+                <small>TOTAL CASH BALANCE</small>
+                <div id="dispCashBal">₹0</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal">
+    <div style="background:white; padding:25px; border-radius:12px; width:95%; max-width:400px; text-align:center;">
+        <h2>Register Karigar</h2>
+        <input type="text" id="newName" placeholder="Karigar Name">
+        <button class="btn-footer" style="background:var(--credit-green);" onclick="registerKarigar()">SAVE</button>
+        <button class="btn-footer" style="background:#999;" onclick="hideModal()">CANCEL</button>
+    </div>
+</div>
+
+<script>
+    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbx0G79ae_2xJR8kBKE2CxjL_62qOUv0_BqzzmTN5YhopZ61XTg0F499a8QvQ3cTpGjcXw/exec";
+    const SHOP_PASS = "1234";
+    let masterData = {};
+    let currentId = "";
+
+    function checkPass() {
+        if(document.getElementById('passInput').value === SHOP_PASS) {
+            openModule('main-menu');
+            loadFromServer();
+        } else { alert("Wrong Password!"); }
+    }
+
+    function openModule(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        refreshUI();
+    }
+
+    async function loadFromServer() {
+        try {
+            const response = await fetch(CLOUD_URL);
+            const text = await response.text();
+            masterData = text.trim() ? JSON.parse(text) : {};
+            currentId = localStorage.getItem('gopi_active_id') || Object.keys(masterData)[0] || "";
+            refreshUI();
+        } catch (err) { masterData = JSON.parse(localStorage.getItem('gopi_master_cloud')) || {}; refreshUI(); }
+    }
+
+    function saveData() {
+        localStorage.setItem('gopi_master_cloud', JSON.stringify(masterData));
+        localStorage.setItem('gopi_active_id', currentId);
+        fetch(CLOUD_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(masterData) });
+    }
+
+    function showModal() { document.getElementById('modal').style.display = 'flex'; }
+    function hideModal() { document.getElementById('modal').style.display = 'none'; }
+
+    function registerKarigar() {
+        const name = document.getElementById('newName').value;
+        if (!name) return alert("Enter Name");
+        const id = "K_" + Date.now();
+        masterData[id] = { name, dr: [], cr: [], cash: [] };
+        currentId = id; saveData(); hideModal(); refreshUI();
+    }
+
+    // --- JOBWORK LOGIC (RESTORED) ---
+    function addEntry(type) {
+        if(!currentId) return;
+        const wt = parseFloat(document.getElementById(type.toLowerCase() + 'Wt').value);
+        if (isNaN(wt)) return;
+        let entry = { 
+            date: document.getElementById(type.toLowerCase() + 'Date').value, 
+            saman: document.getElementById(type.toLowerCase() + 'Saman').value, 
+            wt: wt 
+        };
+        if (type === 'Cr') {
+            if (wt < 1) { entry.rounded = 0; }
+            else {
+                let d = parseFloat((wt - Math.floor(wt)).toFixed(2));
+                entry.rounded = (d < 0.35) ? Math.floor(wt) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(wt) + 1);
+            }
+        }
+        masterData[currentId][type.toLowerCase()].push(entry);
+        saveData(); renderTable();
+    }
+
+    function calculate() {
+        let k = masterData[currentId]; if(!k) return;
+        let rate = parseFloat(document.getElementById('rate').value) || 0;
+        const totalDr = k.dr.reduce((s, i) => s + i.wt, 0);
+        const totalCr = k.cr.reduce((s, i) => s + i.wt, 0);
+        const totalNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
+        const netBal = totalDr - totalCr;
+        const fine = ((totalNet * 0.05) - netBal) * 0.91;
+        document.getElementById('dispDr').innerText = totalDr.toFixed(3);
+        document.getElementById('dispCr').innerText = totalCr.toFixed(3);
+        document.getElementById('dispTotalNet').innerText = totalNet.toFixed(1);
+        document.getElementById('dispBal').innerText = netBal.toFixed(3);
+        document.getElementById('dispNet').innerText = fine.toFixed(5);
+        document.getElementById('dispRs').innerText = "₹" + Math.abs(Math.round(fine * rate)).toLocaleString('en-IN');
+    }
+
+    function renderTable() {
+        const body = document.getElementById('ledgerBody'); body.innerHTML = '';
+        let k = masterData[currentId]; if(!k) return;
+        const rows = Math.max(k.dr.length, k.cr.length);
+        for (let i = 0; i < rows; i++) {
+            const dr = k.dr[i]; const cr = k.cr[i];
+            body.innerHTML += `<tr>
+                <td>${dr ? dr.date : '-'}</td><td>${dr ? dr.saman : '-'}</td>
+                <td style="background:#fffafa;">${dr ? dr.wt.toFixed(3) : '-'} ${dr ? `<button class="btn-del-row" onclick="deleteRow('Dr', ${i})">x</button>` : ''}</td>
+                <td>${cr ? cr.date : '-'}</td><td>${cr ? cr.saman : '-'}</td>
+                <td style="background:#fafffa;">${cr ? cr.wt.toFixed(3) : '-'} ${cr ? `<button class="btn-del-row" onclick="deleteRow('Cr', ${i})">x</button>` : ''}</td>
+                <td style="font-weight:900">${cr ? cr.rounded.toFixed(1) : '-'}</td>
+            </tr>`;
+        }
+        calculate();
+    }
+
+    // --- CASH LOGIC ---
+    function addCashEntry() {
+        if(!currentId) return;
+        const amt = parseFloat(document.getElementById('cashAmt').value);
+        if(isNaN(amt)) return;
+        if(!masterData[currentId].cash) masterData[currentId].cash = [];
+        
+        masterData[currentId].cash.push({
+            date: document.getElementById('cashDate').value || new Date().toLocaleDateString('en-GB'),
+            part: document.getElementById('cashPart').value || "Cash",
+            type: document.getElementById('cashType').value,
+            amt: amt
+        });
+        saveData(); renderCashTable();
+        document.getElementById('cashAmt').value = ''; document.getElementById('cashPart').value = '';
+    }
+
+    function renderCashTable() {
+        const body = document.getElementById('cashTableBody'); body.innerHTML = '';
+        let k = masterData[currentId]; if(!k || !k.cash) return;
+        let bal = 0;
+        k.cash.forEach((c, idx) => {
+            let paid = c.type === 'Paid' ? c.amt : 0;
+            let recd = c.type === 'Recd' ? c.amt : 0;
+            bal += (paid - recd);
+            body.innerHTML += `<tr>
+                <td>${c.date}</td><td>${c.part}</td>
+                <td style="color:var(--debit-red)">${paid || '-'}</td>
+                <td style="color:var(--credit-green)">${recd || '-'}</td>
+                <td>₹${bal}</td>
+                <td><button class="btn-del-row" onclick="deleteCash(${idx})">x</button></td>
+            </tr>`;
+        });
+        document.getElementById('dispCashBal').innerText = "₹" + bal;
+    }
+
+    function refreshUI() {
+        const selectors = [document.getElementById('karigarSelector'), document.getElementById('cashKarigarSelector')];
+        selectors.forEach(sel => {
+            sel.innerHTML = '';
+            Object.keys(masterData).forEach(id => {
+                let opt = document.createElement('option');
+                opt.value = id; opt.innerHTML = masterData[id].name;
+                if(id === currentId) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        });
+        renderTable();
+        renderCashTable();
+    }
+
+    function switchKarigar() { currentId = document.getElementById('karigarSelector').value; refreshUI(); }
+    function switchCashKarigar() { currentId = document.getElementById('cashKarigarSelector').value; refreshUI(); }
+    function deleteRow(type, index) { if(confirm("Delete?")) { (type === 'Dr' ? masterData[currentId].dr : masterData[currentId].cr).splice(index, 1); saveData(); renderTable(); } }
+    function deleteCash(idx) { if(confirm("Delete?")) { masterData[currentId].cash.splice(idx, 1); saveData(); renderCashTable(); } }
+    function deleteKarigar() { if(confirm("Delete Profile?")) { delete masterData[currentId]; currentId = Object.keys(masterData)[0] || ""; saveData(); refreshUI(); } }
+
+    function generatePDF() {
+        const k = masterData[currentId]; if(!k) return;
+        let pdfHTML = `<div style="padding:20px; text-align:center;"><h2>GOPI JEWELLERS</h2><p>Karigar: ${k.name}</p><table style="width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;"><thead><tr style="background:#eee;"><th>Dr Date</th><th>Dr Wt</th><th>Cr Date</th><th>Cr Wt</th><th>Net</th></tr></thead><tbody>`;
+        const rows = Math.max(k.dr.length, k.cr.length);
+        for (let i = 0; i < rows; i++) {
+            pdfHTML += `<tr><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.date || '-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3) || '-'}</td><td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1) || '-'}</td></tr>`;
+        }
+        pdfHTML += `</tbody></table><h3>Total: ${document.getElementById('dispRs').innerText}</h3></div>`;
+        html2pdf().from(pdfHTML).set({ margin: 5, filename: `${k.name}_Slip.pdf`, html2canvas: { scale: 2 } }).save();
+    }
+</script>
+</body>
+</html>
