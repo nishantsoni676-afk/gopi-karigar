@@ -30,8 +30,7 @@
         .stat-card { background: var(--dark); color: white; padding: 12px; border-radius: 8px; text-align: center; }
         .stat-card div { font-size: 20px; font-weight: 900; color: var(--gold); }
         .full-width-card { grid-column: span 2; padding: 15px; border: 2px solid var(--gold); }
-        .profile-info { background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; font-size: 14px; }
-        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
+        .amount-card { background: var(--navy); border: 3px solid var(--gold); }
     </style>
 </head>
 <body>
@@ -60,7 +59,7 @@
         <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
         <div class="header"><h2>Daily Shop Cash Book</h2></div>
         <div class="input-card" style="border-top: 5px solid var(--gold);">
-            <div style="display:flex; gap:5px;"><input type="text" id="dailyDate" style="width:35%;"><input type="text" id="dailyPart" placeholder="Details (Sales/Expense)"></div>
+            <div style="display:flex; gap:5px;"><input type="text" id="dailyDate" style="width:35%;"><input type="text" id="dailyPart" placeholder="Details"></div>
             <div style="display:flex; gap:5px; margin-top:5px;"><input type="number" id="dailyAmt" placeholder="Amount ₹"><select id="dailyType" style="width:40%;"><option value="In">CASH IN (+)</option><option value="Out">CASH OUT (-)</option></select></div>
             <button class="btn-footer" style="background:var(--credit-green);" onclick="addDailyEntry()">SAVE ENTRY</button>
         </div>
@@ -77,7 +76,7 @@
         <select id="karigarSelector" onchange="switchKarigar()"></select>
         <div id="profileDetails" class="profile-info"><b>Phone:</b> <span id="dispPhone">-</span> | <b>Address:</b> <span id="dispAddress">-</span></div>
         <button class="btn-nav" onclick="showModal()">+ NEW REGISTRATION</button>
-        <button class="btn-nav" style="background:#2c3e50; color:white;" onclick="generatePDF()">📄 DOWNLOAD GOLD SLIP</button>
+        
         <div class="input-card dr-card">
             <div style="display:flex; gap:5px;"><input type="text" id="drDate" style="width:35%;"><input type="text" id="drSaman" placeholder="Saman"><input type="number" id="drWt" step="0.001" placeholder="Wt"></div>
             <button class="btn-footer" style="background:var(--debit-red);" onclick="addEntry('dr')">ADD ISSUE (DR)</button>
@@ -87,14 +86,20 @@
             <div style="display:flex; gap:5px; margin-top:5px;"><input type="number" id="crWt" step="0.001" placeholder="Wt"><input type="number" id="crNet" step="0.1" placeholder="Net (Optional)"></div>
             <button class="btn-footer" style="background:var(--credit-green);" onclick="addEntry('cr')">ADD JAMA (CR)</button>
         </div>
-        <input type="number" id="rate" oninput="calculate()" placeholder="₹ Gold Rate">
+        
+        <div style="padding:15px; background:#eee; border-radius:10px; display: flex; align-items: center; justify-content: space-between;">
+            <label style="font-size:18px; font-weight:900;">GOLD RATE:</label>
+            <input type="number" id="rate" oninput="calculate()" placeholder="₹ Rate" style="width: 60%; margin-bottom: 0;">
+        </div>
+
         <div class="table-wrap"><table><thead id="ledgerHeader"></thead><tbody id="ledgerBody"></tbody></table></div>
+        
         <div class="summary">
             <div class="stat-card"><small>TOTAL DR</small><div id="dispDr">0.000</div></div>
             <div class="stat-card"><small>TOTAL CR</small><div id="dispCr">0.000</div></div>
             <div class="stat-card"><small>TOTAL NET</small><div id="dispTotalNet">0.0</div></div>
             <div class="stat-card"><small>BALANCE</small><div id="dispBal">0.000</div></div>
-            <div class="stat-card full-width-card" style="background:#2c3e50"><small>KAM FINE (91.00)</small><div id="dispFine">0.00000</div></div>
+            <div class="stat-card full-width-card" style="background:#2c3e50"><small>KAM FINE (CUSTOM)</small><div id="dispFine">0.00000</div></div>
             <div class="stat-card full-width-card amount-card"><small>SETTLEMENT AMOUNT</small><div id="dispRs">₹0</div></div>
         </div>
         <button class="btn-footer" style="background:#e74c3c; margin-bottom:30px;" onclick="deleteKarigar()">DELETE PROFILE</button>
@@ -102,7 +107,7 @@
 
     <div id="cash-page" class="page">
         <button class="btn-footer" style="background:var(--navy); padding: 10px; font-size: 14px;" onclick="openModule('main-menu')">← BACK TO MENU</button>
-        <div class="header"><h2>Karigar Cash Ledger</h2></div>
+        <div class="header"><h2>Karigar Ledger (Cash)</h2></div>
         <select id="cashKarigarSelector" onchange="switchCashKarigar()"></select>
         <div class="input-card">
             <div style="display:flex; gap:5px;"><input type="text" id="cashDate" style="width:35%;"><input type="text" id="cashPart" placeholder="Particular"></div>
@@ -155,6 +160,55 @@
         fetch(CLOUD_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(masterData) });
     }
 
+    // UPDATED CALCULATION LOGIC
+    function calculate() {
+        let k = masterData[currentId]; if(!k) return;
+        let r = parseFloat(document.getElementById('rate').value) || 0;
+        
+        const tDr = k.dr.reduce((s, i) => s + i.wt, 0);
+        const tCr = k.cr.reduce((s, i) => s + i.wt, 0);
+        const tNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
+        
+        const netBal = tDr - tCr;
+        
+        // YOUR CUSTOM FORMULA: ((Total Net * 0.05) * 0.91) - Balance
+        const fine = ((tNet * 0.05) * 0.91) - netBal;
+        
+        document.getElementById('dispDr').innerText = tDr.toFixed(3);
+        document.getElementById('dispCr').innerText = tCr.toFixed(3);
+        document.getElementById('dispTotalNet').innerText = tNet.toFixed(1);
+        document.getElementById('dispBal').innerText = netBal.toFixed(3);
+        document.getElementById('dispFine').innerText = fine.toFixed(5);
+        document.getElementById('dispRs').innerText = "₹" + Math.abs(Math.round(fine * r)).toLocaleString('en-IN');
+    }
+
+    function addEntry(type) {
+        const wtVal = document.getElementById(type + 'Wt').value; if (!wtVal) return;
+        let entry = { date: document.getElementById(type + 'Date').value || getToday(), saman: document.getElementById(type + 'Saman').value || "Gold", wt: parseFloat(wtVal) };
+        if (type === 'cr') {
+            const manualNet = parseFloat(document.getElementById('crNet').value);
+            if (!isNaN(manualNet)) { entry.rounded = manualNet; } 
+            else { let wt = entry.wt; let d = parseFloat((wt - Math.floor(wt)).toFixed(2)); entry.rounded = (wt < 1) ? 0 : (d < 0.35 ? Math.floor(wt) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(wt) + 1)); }
+            document.getElementById('crNet').value = '';
+        }
+        masterData[currentId][type].push(entry); saveData(); renderTable(); document.getElementById(type + 'Wt').value = ''; document.getElementById(type + 'Saman').value = ''; setDates();
+    }
+
+    function renderTable() {
+        document.getElementById('ledgerHeader').innerHTML = `<tr><th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th><th colspan="4" style="color:var(--credit-green)">CR - JAMA</th></tr><tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Wt</th><th>Net</th></tr>`;
+        const body = document.getElementById('ledgerBody'); body.innerHTML = '';
+        let k = masterData[currentId]; if(!k) return;
+        document.getElementById('dispPhone').innerText = k.phone; document.getElementById('dispAddress').innerText = k.address;
+        const rows = Math.max(k.dr.length, k.cr.length);
+        for (let i = 0; i < rows; i++) {
+            const dr = k.dr[i], cr = k.cr[i];
+            body.innerHTML += `<tr>
+                <td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td><td style="background:#fffafa;">${dr?dr.wt.toFixed(3):'-'} ${dr?`<button class="btn-del-row" onclick="deleteRow('dr', ${i})">x</button>`:''}</td>
+                <td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td><td style="background:#fafffa;">${cr?cr.wt.toFixed(3):'-'} ${cr?`<button class="btn-del-row" onclick="deleteRow('cr', ${i})">x</button>`:''}</td><td>${cr?cr.rounded.toFixed(1):'-'}</td></tr>`;
+        }
+        calculate();
+    }
+
     function addDailyEntry() {
         const amt = parseFloat(document.getElementById('dailyAmt').value); if(isNaN(amt)) return;
         masterData.dailyEntries.push({ date: document.getElementById('dailyDate').value || getToday(), part: document.getElementById('dailyPart').value || "General", type: document.getElementById('dailyType').value, amt: amt });
@@ -170,36 +224,11 @@
     }
     function deleteDaily(i) { if(confirm("Delete?")) { masterData.dailyEntries.splice(i, 1); saveData(); renderDailyTable(); } }
 
-    function addEntry(type) {
-        const wtVal = document.getElementById(type + 'Wt').value; if (!wtVal) return;
-        let entry = { date: document.getElementById(type + 'Date').value || getToday(), saman: document.getElementById(type + 'Saman').value || "Gold", wt: parseFloat(wtVal) };
-        if (type === 'cr') {
-            const manualNet = parseFloat(document.getElementById('crNet').value);
-            if (!isNaN(manualNet)) { entry.rounded = manualNet; } 
-            else { let wt = entry.wt; let d = parseFloat((wt - Math.floor(wt)).toFixed(2)); entry.rounded = (wt < 1) ? 0 : (d < 0.35 ? Math.floor(wt) : (d < 0.9 ? Math.floor(wt) + 0.5 : Math.floor(wt) + 1)); }
-            document.getElementById('crNet').value = '';
-        }
-        masterData[currentId][type].push(entry); saveData(); renderTable(); document.getElementById(type + 'Wt').value = ''; document.getElementById(type + 'Saman').value = ''; setDates();
-    }
     function addCashEntry() {
         const amtVal = document.getElementById('cashAmt').value; if(!amtVal) return;
         if(!masterData[currentId].cash) masterData[currentId].cash = [];
         masterData[currentId].cash.push({ date: document.getElementById('cashDate').value || getToday(), part: document.getElementById('cashPart').value || "Cash", type: document.getElementById('cashType').value, amt: parseFloat(amtVal) });
         saveData(); renderCashTable(); document.getElementById('cashAmt').value = ''; document.getElementById('cashPart').value = ''; setDates();
-    }
-    function renderTable() {
-        document.getElementById('ledgerHeader').innerHTML = `<tr><th colspan="3" style="color:var(--debit-red)">DR - ISSUE</th><th colspan="4" style="color:var(--credit-green)">CR - JAMA</th></tr><tr><th>Date</th><th>Saman</th><th>Wt</th><th>Date</th><th>Saman</th><th>Wt</th><th>Net</th></tr>`;
-        const body = document.getElementById('ledgerBody'); body.innerHTML = '';
-        let k = masterData[currentId]; if(!k) return;
-        document.getElementById('dispPhone').innerText = k.phone; document.getElementById('dispAddress').innerText = k.address;
-        const rows = Math.max(k.dr.length, k.cr.length);
-        for (let i = 0; i < rows; i++) {
-            const dr = k.dr[i], cr = k.cr[i];
-            body.innerHTML += `<tr>
-                <td>${dr?dr.date:'-'}</td><td>${dr?dr.saman:'-'}</td><td style="background:#fffafa;">${dr?dr.wt.toFixed(3):'-'} ${dr?`<button class="btn-del-row" onclick="deleteRow('dr', ${i})">x</button>`:''}</td>
-                <td>${cr?cr.date:'-'}</td><td>${cr?cr.saman:'-'}</td><td style="background:#fafffa;">${cr?cr.wt.toFixed(3):'-'} ${cr?`<button class="btn-del-row" onclick="deleteRow('cr', ${i})">x</button>`:''}</td><td>${cr?cr.rounded.toFixed(1):'-'}</td></tr>`;
-        }
-        calculate();
     }
     function renderCashTable() {
         const body = document.getElementById('cashTableBody'); body.innerHTML = '<thead><tr><th>Date</th><th>Part</th><th>Paid</th><th>Recd</th><th>Bal</th><th>X</th></tr></thead>';
@@ -210,35 +239,8 @@
         });
         document.getElementById('dispCashBal').innerText = "₹" + bal;
     }
-    function calculate() {
-        let k = masterData[currentId]; if(!k) return;
-        let r = parseFloat(document.getElementById('rate').value) || 0;
-        const tDr = k.dr.reduce((s, i) => s + i.wt, 0), tCr = k.cr.reduce((s, i) => s + i.wt, 0), tNet = k.cr.reduce((s, i) => s + (i.rounded || 0), 0);
-        const netBal = tDr - tCr;
-        const fine = ((tNet * 0.05) - netBal) * 0.91;
-        document.getElementById('dispDr').innerText = tDr.toFixed(3); document.getElementById('dispCr').innerText = tCr.toFixed(3);
-        document.getElementById('dispTotalNet').innerText = tNet.toFixed(1); document.getElementById('dispBal').innerText = netBal.toFixed(3);
-        document.getElementById('dispFine').innerText = fine.toFixed(5);
-        document.getElementById('dispRs').innerText = "₹" + Math.abs(Math.round(fine * r)).toLocaleString('en-IN');
-    }
 
-    function generatePDF() {
-        const k = masterData[currentId]; if(!k) return;
-        const logo = localStorage.getItem('shopLogo') || '';
-        let pdfHTML = `<div style="padding:20px; font-family:sans-serif; text-align:center;">
-            ${logo ? `<img src="${logo}" style="width:80px; height:80px; border-radius:50%;">` : ''}
-            <h2 style="margin:5px 0; color:#d4af37;">GOPI JEWELLERS</h2>
-            <div style="margin-bottom:20px; border-bottom:2px solid #eee; padding-bottom:10px;"><b>Karigar:</b> ${k.name} | <b>Phone:</b> ${k.phone} <br> <b>Address:</b> ${k.address}</div>
-            <table style="width:100%; border-collapse:collapse; font-size:11px;"><thead style="background:#f4f4f4;"><tr><th colspan="3" style="border:1px solid #ddd; padding:8px;">DR - ISSUE</th><th colspan="4" style="border:1px solid #ddd; padding:8px;">CR - JAMA</th></tr><tr><th style="border:1px solid #ddd; padding:5px;">Date</th><th style="border:1px solid #ddd; padding:5px;">Saman</th><th style="border:1px solid #ddd; padding:5px;">Wt</th><th style="border:1px solid #ddd; padding:5px;">Date</th><th style="border:1px solid #ddd; padding:5px;">Saman</th><th style="border:1px solid #ddd; padding:5px;">Wt</th><th style="border:1px solid #ddd; padding:5px;">Net</th></tr></thead><tbody>`;
-        const rows = Math.max(k.dr.length, k.cr.length);
-        for (let i = 0; i < rows; i++) {
-            pdfHTML += `<tr><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.date||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.saman||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.dr[i]?.wt.toFixed(3)||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.date||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.saman||'-'}</td><td style="border:1px solid #ddd; padding:5px;">${k.cr[i]?.wt.toFixed(3)||'-'}</td><td style="border:1px solid #ddd; padding:5px; font-weight:bold;">${k.cr[i]?.rounded.toFixed(1)||'-'}</td></tr>`;
-        }
-        pdfHTML += `</tbody></table><div style="margin-top:20px; text-align:right; font-size:14px; border-top:2px solid #d4af37; padding-top:10px;"><b>Settlement Amount: ${document.getElementById('dispRs').innerText}</b></div></div>`;
-        html2pdf().from(pdfHTML).set({ margin: 10, filename: `${k.name}_Gold.pdf` }).save();
-    }
-
-    function checkPass() { if(document.getElementById('passInput').value === SHOP_PASS) { openModule('main-menu'); loadFromServer(); } else alert("Wrong!"); }
+    function checkPass() { if(document.getElementById('passInput').value === SHOP_PASS) { openModule('main-menu'); loadFromServer(); } else alert("Wrong Password!"); }
     function openModule(id) { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); setDates(); refreshUI(); }
     function refreshUI() {
         const selG = document.getElementById('karigarSelector'), selC = document.getElementById('cashKarigarSelector');
